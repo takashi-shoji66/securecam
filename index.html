@@ -358,8 +358,55 @@
   </div>
 
   <div class="footer">
-    SECURE CONNECTION REQUIRED &nbsp;|&nbsp; v1.0.0
+    SECURE CONNECTION REQUIRED &nbsp;|&nbsp; v1.1.0
   </div>
+</div>
+
+<!-- 役割選択画面 -->
+<div id="role-screen" style="display:none; position:fixed; inset:0; background:var(--bg); z-index:200; flex-direction:column; align-items:center; justify-content:center; padding:20px;">
+  <div style="font-family:var(--font-mono); font-size:14px; color:var(--accent); letter-spacing:3px; margin-bottom:8px;">SECURECAM</div>
+  <div style="font-family:var(--font-mono); font-size:10px; color:var(--muted); letter-spacing:2px; margin-bottom:40px;">この端末の役割を選択してください</div>
+
+  <!-- カメラ名入力（カメラ選択時のみ表示） -->
+  <div id="cam-name-wrap" style="display:none; width:100%; max-width:400px; margin-bottom:16px;">
+    <div style="font-family:var(--font-mono); font-size:10px; color:var(--muted); letter-spacing:2px; margin-bottom:6px;">// カメラ名（任意）</div>
+    <input id="cam-name-input" type="text" maxlength="20" placeholder="例: 玄関カメラ"
+      style="width:100%; background:var(--surface); border:1px solid var(--border); color:var(--text); font-family:var(--font-mono); font-size:14px; padding:10px 12px; outline:none; border-radius:0;">
+  </div>
+
+  <div style="display:flex; flex-direction:column; gap:14px; width:100%; max-width:400px;">
+
+    <!-- 管理ダッシュボード -->
+    <button onclick="goTo('dashboard')"
+      style="width:100%; padding:20px 16px; background:transparent; border:1px solid var(--accent); color:var(--accent); font-family:var(--font-mono); font-size:13px; letter-spacing:2px; cursor:pointer; display:flex; align-items:center; gap:14px; transition:background 0.2s;"
+      onmouseover="this.style.background='rgba(0,212,255,0.08)'" onmouseout="this.style.background='transparent'">
+      <span style="font-size:22px;">🖥</span>
+      <span>
+        <div style="font-size:13px; letter-spacing:2px;">管理ダッシュボード</div>
+        <div style="font-size:10px; color:var(--muted); margin-top:4px; letter-spacing:1px;">全カメラの映像を監視する</div>
+      </span>
+    </button>
+
+    <!-- カメラとして起動 -->
+    <button onclick="selectCamera()"
+      style="width:100%; padding:20px 16px; background:transparent; border:1px solid #00ff88; color:#00ff88; font-family:var(--font-mono); font-size:13px; letter-spacing:2px; cursor:pointer; display:flex; align-items:center; gap:14px; transition:background 0.2s;"
+      onmouseover="this.style.background='rgba(0,255,136,0.08)'" onmouseout="this.style.background='transparent'">
+      <span style="font-size:22px;">📷</span>
+      <span>
+        <div style="font-size:13px; letter-spacing:2px;">カメラとして起動</div>
+        <div style="font-size:10px; color:var(--muted); margin-top:4px; letter-spacing:1px;">この端末の映像を送信する</div>
+      </span>
+    </button>
+
+  </div>
+
+  <!-- 前回の選択を記憶 -->
+  <div style="margin-top:24px; display:flex; align-items:center; gap:8px;">
+    <input type="checkbox" id="remember-role" style="cursor:pointer;">
+    <label for="remember-role" style="font-family:var(--font-mono); font-size:10px; color:var(--muted); letter-spacing:1px; cursor:pointer;">次回から自動的にこの役割で起動</label>
+  </div>
+
+  <button onclick="logout()" style="margin-top:24px; font-family:var(--font-mono); font-size:9px; letter-spacing:2px; color:var(--muted); background:transparent; border:1px solid var(--border); padding:6px 14px; cursor:pointer;">LOGOUT</button>
 </div>
 
 <div class="status-bar">
@@ -374,7 +421,6 @@
 <script src="firebase-config.js"></script>
 
 <script>
-  // Firebase 初期化
   firebase.initializeApp(FIREBASE_CONFIG);
   const auth = firebase.auth();
 
@@ -387,12 +433,46 @@
   setInterval(updateTime, 1000);
   updateTime();
 
-  // すでにログイン済みならダッシュボードへ
+  // ログイン状態を監視
   auth.onAuthStateChanged(user => {
     if (user) {
-      window.location.href = 'dashboard.html';
+      // 記憶した役割があれば自動遷移
+      const saved = localStorage.getItem('sc_role');
+      if (saved === 'dashboard') {
+        window.location.href = 'dashboard.html';
+      } else if (saved === 'camera') {
+        window.location.href = 'camera.html';
+      } else {
+        // 役割選択画面を表示
+        document.getElementById('role-screen').style.display = 'flex';
+      }
     }
   });
+
+  // カメラ選択：名前入力欄を表示
+  function selectCamera() {
+    const wrap = document.getElementById('cam-name-wrap');
+    if (wrap.style.display === 'none') {
+      wrap.style.display = 'block';
+      document.getElementById('cam-name-input').focus();
+    } else {
+      goTo('camera');
+    }
+  }
+
+  // 役割を決定して遷移
+  function goTo(role) {
+    if (document.getElementById('remember-role').checked) {
+      localStorage.setItem('sc_role', role);
+    }
+    if (role === 'camera') {
+      const name = document.getElementById('cam-name-input').value.trim();
+      if (name) sessionStorage.setItem('sc_cam_name', name);
+      window.location.href = 'camera.html';
+    } else {
+      window.location.href = 'dashboard.html';
+    }
+  }
 
   // Enterキーでログイン
   document.getElementById('password').addEventListener('keydown', e => {
@@ -410,14 +490,12 @@
       return;
     }
 
-    // ローディング状態
     btn.classList.add('loading');
     btn.disabled = true;
     errorMsg.classList.remove('show');
 
     try {
       await auth.signInWithEmailAndPassword(email, password);
-      // onAuthStateChanged がダッシュボードへリダイレクト
     } catch (err) {
       let msg = 'ログインに失敗しました';
       if (err.code === 'auth/user-not-found' || err.code === 'auth/wrong-password' || err.code === 'auth/invalid-credential') {
@@ -437,6 +515,11 @@
     const el = document.getElementById('error-msg');
     el.textContent = '⚠ ' + msg;
     el.classList.add('show');
+  }
+
+  function logout() {
+    localStorage.removeItem('sc_role');
+    auth.signOut();
   }
 </script>
 </body>

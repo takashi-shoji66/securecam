@@ -367,13 +367,13 @@
   let localStream = null;
   let peerConnections = new Map(); // dashboardId -> RTCPeerConnection
   let cameraId = null;
-  let facingMode = 'environment'; // 背面カメラ優先
+  let facingMode = 'environment';
   let motionCanvas = null;
   let motionCtx = null;
   let prevFrame = null;
   let motionTimer = null;
   let isRunning = false;
-  let dashboardId = null;
+  const dashboardIds = new Set(); // 複数管理端末対応
 
   // 認証チェック
   auth.onAuthStateChanged(user => {
@@ -382,29 +382,39 @@
       return;
     }
     cameraId = user.uid + '_' + Date.now();
-    listenForDashboard();
+
+    // index.htmlで入力したカメラ名を引き継ぐ
+    const savedName = sessionStorage.getItem('sc_cam_name');
+    if (savedName) {
+      document.getElementById('cam-name').value = savedName;
+      sessionStorage.removeItem('sc_cam_name');
+    }
+
+    listenForDashboards();
   });
 
-  // ダッシュボードの登場を監視
-  function listenForDashboard() {
+  // 全ダッシュボードを監視（複数対応）
+  function listenForDashboards() {
     db.ref('dashboard').on('child_added', snap => {
-      dashboardId = snap.key;
+      const dId = snap.key;
+      dashboardIds.add(dId);
+      updateConnStatus();
       if (isRunning && localStream) {
-        connectToDashboard(dashboardId);
+        connectToDashboard(dId);
       }
     });
 
     db.ref('dashboard').on('child_removed', snap => {
-      const id = snap.key;
-      if (peerConnections.has(id)) {
-        peerConnections.get(id).close();
-        peerConnections.delete(id);
+      const dId = snap.key;
+      dashboardIds.delete(dId);
+      if (peerConnections.has(dId)) {
+        peerConnections.get(dId).close();
+        peerConnections.delete(dId);
       }
-      setStatus('idle', 'ダッシュボード切断');
-      document.getElementById('conn-state').textContent = '未接続';
+      updateConnStatus();
     });
 
-    // シグナリング受信（dashboardからのanswer・ICE）
+    // シグナリング受信
     db.ref(`signaling/${cameraId}`).on('child_added', snap => {
       const msg = snap.val();
       if (!msg) return;
@@ -413,43 +423,48 @@
     });
   }
 
+  // 接続状態表示を更新
+  function updateConnStatus() {
+    const active = peerConnections.size;
+    const total = dashboardIds.size;
+    if (total === 0) {
+      document.getElementById('conn-state').textContent = '未接続';
+    } else if (active === 0) {
+      document.getElementById('conn-state').textContent = `待機中（${total}台検出）`;
+    } else {
+      document.getElementById('conn-state').textContent = `配信中（${active}/${total}台）`;
+    }
+  }
+
   // カメラ開始
   async function startCamera() {
     const name = document.getElementById('cam-name').value.trim() || `Camera ${cameraId?.slice(0,6)}`;
-
     setStatus('connecting', 'カメラ起動中...');
 
     try {
-      const constraints = {
-        video: {
-          facingMode,
-          width: { ideal: 1280 },
-          height: { ideal: 720 }
-        },
+      localStream = await navigator.mediaDevices.getUserMedia({
+        video: { facingMode, width: { ideal: 1280 }, height: { ideal: 720 } },
         audio: false
-      };
-
-      localStream = await navigator.mediaDevices.getUserMedia(constraints);
+      });
       document.getElementById('preview').srcObject = localStream;
       document.getElementById('preview-overlay').classList.add('hidden');
-
       isRunning = true;
 
-      // UIを更新
       document.getElementById('btn-start').style.display = 'none';
       document.getElementById('btn-stop').style.display = 'flex';
 
       // Firebaseにカメラ登録
       const camRef = db.ref(`cameras/${cameraId}`);
-      camRef.set({ name, dashboardId, online: true, startedAt: Date.now() });
+      camRef.set({ name, online: true, startedAt: Date.now() });
       camRef.onDisconnect().remove();
 
-      // 動体検知の準備
       setupMotionDetection();
 
-      // 既存のダッシュボードに接続
-      if (dashboardId) {
-        await connectToDashboard(dashboardId);
+      // 既存の全ダッシュボードに接続
+      if (dashboardIds.size > 0) {
+        for (const dId of dashboardIds) {
+          await connectToDashboard(dId);
+        }
       } else {
         setStatus('connecting', 'ダッシュボード待機中...');
       }
@@ -472,10 +487,8 @@
         { urls: 'stun:stun1.l.google.com:19302' }
       ]
     });
-
     peerConnections.set(dId, pc);
 
-    // トラック追加
     localStream.getTracks().forEach(track => pc.addTrack(track, localStream));
 
     pc.onicecandidate = e => {
@@ -490,17 +503,12 @@
     };
 
     pc.onconnectionstatechange = () => {
-      const state = pc.connectionState;
-      document.getElementById('conn-state').textContent =
-        state === 'connected' ? 'ライブ配信中' :
-        state === 'connecting' ? '接続中...' :
-        state === 'disconnected' ? '切断' : state;
-
-      if (state === 'connected') setStatus('live', 'ライブ配信中');
-      else if (state === 'disconnected') setStatus('connecting', '再接続中...');
+      const connected = [...peerConnections.values()].filter(p => p.connectionState === 'connected').length;
+      if (connected > 0) setStatus('live', `ライブ配信中`);
+      else if (isRunning) setStatus('connecting', '接続中...');
+      updateConnStatus();
     };
 
-    // Offerを作成してFirebaseへ
     const offer = await pc.createOffer();
     await pc.setLocalDescription(offer);
 
@@ -515,7 +523,7 @@
 
   // シグナリング処理
   async function handleSignaling(msg) {
-    const pc = peerConnections.get(msg.dashboardId || dashboardId);
+    const pc = peerConnections.get(msg.dashboardId);
     if (!pc) return;
 
     if (msg.type === 'answer') {
@@ -528,15 +536,12 @@
   // カメラ停止
   function stopCamera() {
     isRunning = false;
-
     if (localStream) {
       localStream.getTracks().forEach(t => t.stop());
       localStream = null;
     }
-
     peerConnections.forEach(pc => pc.close());
     peerConnections.clear();
-
     if (cameraId) db.ref(`cameras/${cameraId}`).remove();
     if (motionTimer) clearInterval(motionTimer);
 
@@ -545,31 +550,23 @@
     document.getElementById('btn-start').style.display = 'flex';
     document.getElementById('btn-stop').style.display = 'none';
     setStatus('idle', '待機中');
-    document.getElementById('conn-state').textContent = '未接続';
+    updateConnStatus();
   }
 
-  // カメラ切替（前面/背面）
+  // カメラ切替
   async function flipCamera() {
     facingMode = facingMode === 'environment' ? 'user' : 'environment';
     const preview = document.getElementById('preview');
-    // セルフィーは左右反転
     preview.style.transform = facingMode === 'user' ? 'scaleX(-1)' : 'scaleX(1)';
 
     if (isRunning && localStream) {
-      const oldTracks = localStream.getVideoTracks();
-      const newStream = await navigator.mediaDevices.getUserMedia({
-        video: { facingMode },
-        audio: false
-      });
+      const newStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode }, audio: false });
       const newTrack = newStream.getVideoTracks()[0];
-
-      // 既存のPCのトラックを置き換え
       peerConnections.forEach(pc => {
         const sender = pc.getSenders().find(s => s.track?.kind === 'video');
         if (sender) sender.replaceTrack(newTrack);
       });
-
-      oldTracks.forEach(t => t.stop());
+      localStream.getVideoTracks().forEach(t => t.stop());
       localStream = newStream;
       preview.srcObject = localStream;
     }
@@ -582,22 +579,16 @@
     motionCanvas.height = 90;
     motionCtx = motionCanvas.getContext('2d');
     prevFrame = null;
-
     motionTimer = setInterval(detectMotion, 500);
   }
 
   function detectMotion() {
     if (!document.getElementById('motion-toggle').checked) return;
     if (!localStream) return;
-
     const video = document.getElementById('preview');
     motionCtx.drawImage(video, 0, 0, 160, 90);
     const frame = motionCtx.getImageData(0, 0, 160, 90);
-
-    if (!prevFrame) {
-      prevFrame = frame;
-      return;
-    }
+    if (!prevFrame) { prevFrame = frame; return; }
 
     let diff = 0;
     for (let i = 0; i < frame.data.length; i += 4) {
@@ -606,46 +597,36 @@
       const db = Math.abs(frame.data[i+2] - prevFrame.data[i+2]);
       if ((dr + dg + db) > 60) diff++;
     }
-
     prevFrame = frame;
-    const threshold = 200; // 感度：低いほど敏感
-
-    if (diff > threshold) {
-      triggerMotionAlert();
-    }
+    if (diff > 200) triggerMotionAlert();
   }
 
   let lastAlertTime = 0;
 
   function triggerMotionAlert() {
     const now = Date.now();
-    if (now - lastAlertTime < 5000) return; // 5秒クールダウン
+    if (now - lastAlertTime < 5000) return;
     lastAlertTime = now;
 
-    // UI
     const indicator = document.getElementById('motion-indicator');
     indicator.classList.add('show');
     setTimeout(() => indicator.classList.remove('show'), 3000);
 
-    // Firebaseにアラートを送信
-    if (dashboardId && cameraId) {
-      db.ref(`alerts/${dashboardId}`).push({
-        cameraId,
-        cameraName: document.getElementById('cam-name').value.trim() || `Camera ${cameraId.slice(0,6)}`,
-        timestamp: now
-      });
-    }
+    // 全ダッシュボードにアラート送信
+    const cameraName = document.getElementById('cam-name').value.trim() || `Camera ${cameraId.slice(0,6)}`;
+    dashboardIds.forEach(dId => {
+      db.ref(`alerts/${dId}`).push({ cameraId, cameraName, timestamp: now });
+    });
   }
 
-  // ステータス更新
   function setStatus(state, text) {
-    const dot = document.getElementById('status-dot');
-    dot.className = `status-dot ${state}`;
+    document.getElementById('status-dot').className = `status-dot ${state}`;
     document.getElementById('status-text').textContent = text;
   }
 
   function logout() {
     stopCamera();
+    localStorage.removeItem('sc_role');
     auth.signOut().then(() => { window.location.href = 'index.html'; });
   }
 </script>
