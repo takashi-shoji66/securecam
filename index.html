@@ -1,0 +1,437 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SecureCam — ログイン</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Zen+Kaku+Gothic+New:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #080b10;
+    --surface: #0d1117;
+    --border: #1a2332;
+    --accent: #00d4ff;
+    --accent-dim: rgba(0,212,255,0.12);
+    --danger: #ff4455;
+    --text: #c8dae8;
+    --muted: #3a5068;
+    --font-mono: 'Share Tech Mono', monospace;
+    --font-ui: 'Zen Kaku Gothic New', sans-serif;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--font-ui);
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    position: relative;
+  }
+
+  /* 背景グリッド */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(0,212,255,0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(0,212,255,0.03) 1px, transparent 1px);
+    background-size: 40px 40px;
+    pointer-events: none;
+  }
+
+  /* スキャンライン */
+  body::after {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background: repeating-linear-gradient(
+      0deg,
+      transparent,
+      transparent 2px,
+      rgba(0,0,0,0.08) 2px,
+      rgba(0,0,0,0.08) 4px
+    );
+    pointer-events: none;
+    z-index: 100;
+  }
+
+  .container {
+    width: 100%;
+    max-width: 420px;
+    padding: 20px;
+    position: relative;
+    z-index: 10;
+  }
+
+  /* ロゴ */
+  .logo {
+    text-align: center;
+    margin-bottom: 40px;
+    animation: fadeDown 0.6s ease-out;
+  }
+
+  .logo-icon {
+    width: 64px;
+    height: 64px;
+    margin: 0 auto 16px;
+    border: 1.5px solid var(--accent);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    animation: rotate-border 8s linear infinite;
+  }
+
+  .logo-icon::before {
+    content: '';
+    position: absolute;
+    inset: 4px;
+    border: 1px solid rgba(0,212,255,0.3);
+    border-radius: 50%;
+  }
+
+  .logo-icon svg {
+    width: 28px;
+    height: 28px;
+    fill: var(--accent);
+  }
+
+  @keyframes rotate-border {
+    0% { box-shadow: 0 0 0 0 rgba(0,212,255,0.4), inset 0 0 0 0 rgba(0,212,255,0.1); }
+    50% { box-shadow: 0 0 20px 4px rgba(0,212,255,0.2), inset 0 0 10px 0 rgba(0,212,255,0.05); }
+    100% { box-shadow: 0 0 0 0 rgba(0,212,255,0.4), inset 0 0 0 0 rgba(0,212,255,0.1); }
+  }
+
+  .logo-title {
+    font-family: var(--font-mono);
+    font-size: 22px;
+    color: var(--accent);
+    letter-spacing: 4px;
+    text-transform: uppercase;
+  }
+
+  .logo-sub {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    color: var(--muted);
+    letter-spacing: 3px;
+    margin-top: 4px;
+  }
+
+  /* カード */
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    padding: 32px;
+    position: relative;
+    animation: fadeUp 0.6s ease-out 0.1s both;
+  }
+
+  .card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, var(--accent), transparent);
+  }
+
+  .card-title {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--muted);
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    margin-bottom: 24px;
+  }
+
+  /* フォーム */
+  .form-group {
+    margin-bottom: 18px;
+  }
+
+  label {
+    display: block;
+    font-family: var(--font-mono);
+    font-size: 10px;
+    color: var(--muted);
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    margin-bottom: 8px;
+  }
+
+  input {
+    width: 100%;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    color: var(--text);
+    font-family: var(--font-mono);
+    font-size: 14px;
+    padding: 12px 14px;
+    outline: none;
+    transition: border-color 0.2s;
+    -webkit-appearance: none;
+    border-radius: 0;
+  }
+
+  input:focus {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px rgba(0,212,255,0.08);
+  }
+
+  input::placeholder { color: var(--muted); }
+
+  /* ボタン */
+  .btn {
+    width: 100%;
+    padding: 14px;
+    background: transparent;
+    border: 1px solid var(--accent);
+    color: var(--accent);
+    font-family: var(--font-mono);
+    font-size: 13px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    cursor: pointer;
+    margin-top: 8px;
+    transition: all 0.2s;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .btn::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: var(--accent);
+    transform: translateX(-100%);
+    transition: transform 0.2s;
+    z-index: 0;
+  }
+
+  .btn:hover::before { transform: translateX(0); }
+  .btn:hover { color: var(--bg); }
+  .btn span { position: relative; z-index: 1; }
+
+  .btn:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+    pointer-events: none;
+  }
+
+  /* エラー */
+  .error-msg {
+    background: rgba(255,68,85,0.1);
+    border: 1px solid rgba(255,68,85,0.3);
+    color: var(--danger);
+    font-family: var(--font-mono);
+    font-size: 11px;
+    padding: 10px 12px;
+    margin-top: 14px;
+    display: none;
+    letter-spacing: 0.5px;
+  }
+
+  .error-msg.show { display: block; }
+
+  /* ローダー */
+  .loader {
+    display: inline-block;
+    width: 14px;
+    height: 14px;
+    border: 2px solid var(--bg);
+    border-top-color: transparent;
+    border-radius: 50%;
+    animation: spin 0.6s linear infinite;
+    vertical-align: middle;
+    margin-right: 6px;
+    display: none;
+  }
+
+  .loading .loader { display: inline-block; }
+  .loading .btn-text { display: none; }
+
+  @keyframes spin { to { transform: rotate(360deg); } }
+  @keyframes fadeDown {
+    from { opacity: 0; transform: translateY(-16px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(16px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  /* フッター */
+  .footer {
+    text-align: center;
+    margin-top: 20px;
+    font-family: var(--font-mono);
+    font-size: 10px;
+    color: var(--muted);
+    letter-spacing: 1px;
+    animation: fadeUp 0.6s ease-out 0.2s both;
+  }
+
+  /* ステータスバー */
+  .status-bar {
+    position: fixed;
+    bottom: 0; left: 0; right: 0;
+    background: var(--surface);
+    border-top: 1px solid var(--border);
+    padding: 6px 16px;
+    display: flex;
+    gap: 16px;
+    align-items: center;
+    z-index: 10;
+  }
+
+  .status-item {
+    font-family: var(--font-mono);
+    font-size: 9px;
+    color: var(--muted);
+    letter-spacing: 1px;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+  }
+
+  .status-dot {
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: var(--accent);
+    animation: pulse 2s ease-in-out infinite;
+  }
+
+  @keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.3; }
+  }
+</style>
+</head>
+<body>
+
+<div class="container">
+  <div class="logo">
+    <div class="logo-icon">
+      <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+        <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 14H9V8h2v8zm4 0h-2V8h2v8z"/>
+        <circle cx="12" cy="12" r="3"/>
+        <path d="M9 9l6 6M15 9l-6 6" stroke-width="0.5" fill="none"/>
+      </svg>
+    </div>
+    <div class="logo-title">SecureCam</div>
+    <div class="logo-sub">Security Monitoring System</div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">// 認証が必要です</div>
+
+    <div class="form-group">
+      <label>メールアドレス</label>
+      <input type="email" id="email" placeholder="your@email.com" autocomplete="email">
+    </div>
+
+    <div class="form-group">
+      <label>パスワード</label>
+      <input type="password" id="password" placeholder="••••••••" autocomplete="current-password">
+    </div>
+
+    <button class="btn" id="login-btn" onclick="handleLogin()">
+      <span class="loader"></span>
+      <span class="btn-text"><span>ログイン</span></span>
+    </button>
+
+    <div class="error-msg" id="error-msg"></div>
+  </div>
+
+  <div class="footer">
+    SECURE CONNECTION REQUIRED &nbsp;|&nbsp; v1.0.0
+  </div>
+</div>
+
+<div class="status-bar">
+  <div class="status-item"><div class="status-dot"></div> SYSTEM ONLINE</div>
+  <div class="status-item" id="time-display"></div>
+</div>
+
+<!-- Firebase SDK -->
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
+<script src="firebase-config.js"></script>
+
+<script>
+  // Firebase 初期化
+  firebase.initializeApp(FIREBASE_CONFIG);
+  const auth = firebase.auth();
+
+  // 時刻表示
+  function updateTime() {
+    const now = new Date();
+    document.getElementById('time-display').textContent =
+      now.toLocaleDateString('ja-JP') + ' ' + now.toTimeString().slice(0, 8);
+  }
+  setInterval(updateTime, 1000);
+  updateTime();
+
+  // すでにログイン済みならダッシュボードへ
+  auth.onAuthStateChanged(user => {
+    if (user) {
+      window.location.href = 'dashboard.html';
+    }
+  });
+
+  // Enterキーでログイン
+  document.getElementById('password').addEventListener('keydown', e => {
+    if (e.key === 'Enter') handleLogin();
+  });
+
+  async function handleLogin() {
+    const email = document.getElementById('email').value.trim();
+    const password = document.getElementById('password').value;
+    const btn = document.getElementById('login-btn');
+    const errorMsg = document.getElementById('error-msg');
+
+    if (!email || !password) {
+      showError('メールアドレスとパスワードを入力してください');
+      return;
+    }
+
+    // ローディング状態
+    btn.classList.add('loading');
+    btn.disabled = true;
+    errorMsg.classList.remove('show');
+
+    try {
+      await auth.signInWithEmailAndPassword(email, password);
+      // onAuthStateChanged がダッシュボードへリダイレクト
+    } catch (err) {
+      let msg = 'ログインに失敗しました';
+      if (err.code === 'auth/user-not-found' || err.code === 'auth/wrong-password' || err.code === 'auth/invalid-credential') {
+        msg = 'メールアドレスまたはパスワードが正しくありません';
+      } else if (err.code === 'auth/too-many-requests') {
+        msg = 'ログイン試行回数が多すぎます。しばらく待ってから再試行してください';
+      } else if (err.code === 'auth/network-request-failed') {
+        msg = 'ネットワークエラーが発生しました';
+      }
+      showError(msg);
+      btn.classList.remove('loading');
+      btn.disabled = false;
+    }
+  }
+
+  function showError(msg) {
+    const el = document.getElementById('error-msg');
+    el.textContent = '⚠ ' + msg;
+    el.classList.add('show');
+  }
+</script>
+</body>
+</html>

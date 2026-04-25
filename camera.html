@@ -1,0 +1,647 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>SecureCam — カメラ</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Zen+Kaku+Gothic+New:wght@300;400&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #080b10;
+    --surface: #0d1117;
+    --border: #1a2332;
+    --accent: #00d4ff;
+    --accent2: #ff4455;
+    --accent3: #00ff88;
+    --text: #c8dae8;
+    --muted: #3a5068;
+    --font-mono: 'Share Tech Mono', monospace;
+    --font-ui: 'Zen Kaku Gothic New', sans-serif;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--font-ui);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 20px 16px 40px;
+  }
+
+  /* ヘッダー */
+  .header {
+    width: 100%;
+    max-width: 480px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 24px;
+  }
+
+  .logo {
+    font-family: var(--font-mono);
+    font-size: 13px;
+    color: var(--accent);
+    letter-spacing: 3px;
+  }
+
+  .logout-btn {
+    font-family: var(--font-mono);
+    font-size: 9px;
+    letter-spacing: 2px;
+    color: var(--muted);
+    background: transparent;
+    border: 1px solid var(--border);
+    padding: 5px 10px;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .logout-btn:hover { border-color: var(--accent2); color: var(--accent2); }
+
+  /* カメラ名入力 */
+  .cam-name-box {
+    width: 100%;
+    max-width: 480px;
+    margin-bottom: 16px;
+  }
+
+  .cam-name-label {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    color: var(--muted);
+    letter-spacing: 2px;
+    margin-bottom: 6px;
+    display: block;
+  }
+
+  .cam-name-input {
+    width: 100%;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    color: var(--text);
+    font-family: var(--font-mono);
+    font-size: 14px;
+    padding: 10px 12px;
+    outline: none;
+    border-radius: 0;
+    transition: border-color 0.2s;
+  }
+
+  .cam-name-input:focus { border-color: var(--accent); }
+
+  /* プレビュー */
+  .preview-wrap {
+    width: 100%;
+    max-width: 480px;
+    aspect-ratio: 16/9;
+    background: #000;
+    border: 1px solid var(--border);
+    position: relative;
+    overflow: hidden;
+    margin-bottom: 16px;
+  }
+
+  #preview {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+    transform: scaleX(-1); /* セルフィーモード */
+  }
+
+  .preview-overlay {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(0,0,0,0.6);
+  }
+
+  .preview-overlay.hidden { display: none; }
+
+  .preview-msg {
+    text-align: center;
+    font-family: var(--font-mono);
+    font-size: 12px;
+    color: var(--muted);
+    letter-spacing: 1px;
+  }
+
+  /* ステータス */
+  .status-bar {
+    width: 100%;
+    max-width: 480px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 12px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    margin-bottom: 16px;
+  }
+
+  .status-dot {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+
+  .status-dot.idle { background: var(--muted); }
+  .status-dot.connecting { background: #ffaa00; animation: pulse 0.8s ease-in-out infinite; }
+  .status-dot.live { background: var(--accent3); animation: pulse 2s ease-in-out infinite; }
+  .status-dot.error { background: var(--accent2); }
+
+  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.2} }
+
+  #status-text {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--text);
+    letter-spacing: 1px;
+    flex: 1;
+  }
+
+  #motion-indicator {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    color: var(--accent2);
+    display: none;
+    animation: pulse 0.4s ease-in-out infinite;
+  }
+
+  #motion-indicator.show { display: block; }
+
+  /* ボタン */
+  .btn-row {
+    width: 100%;
+    max-width: 480px;
+    display: flex;
+    gap: 10px;
+    margin-bottom: 16px;
+  }
+
+  .btn {
+    flex: 1;
+    padding: 14px;
+    font-family: var(--font-mono);
+    font-size: 12px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    cursor: pointer;
+    border: 1px solid;
+    background: transparent;
+    transition: all 0.2s;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .btn-start {
+    border-color: var(--accent3);
+    color: var(--accent3);
+  }
+
+  .btn-start:hover { background: rgba(0,255,136,0.1); }
+  .btn-start:disabled { opacity: 0.3; cursor: not-allowed; }
+
+  .btn-stop {
+    border-color: var(--accent2);
+    color: var(--accent2);
+    display: none;
+  }
+
+  .btn-stop:hover { background: rgba(255,68,85,0.1); }
+
+  .btn-flip {
+    flex: 0 0 auto;
+    border-color: var(--border);
+    color: var(--muted);
+    padding: 14px 16px;
+  }
+
+  .btn-flip:hover { border-color: var(--accent); color: var(--accent); }
+
+  /* 設定 */
+  .settings {
+    width: 100%;
+    max-width: 480px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    padding: 14px;
+  }
+
+  .settings-title {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    color: var(--muted);
+    letter-spacing: 2px;
+    margin-bottom: 12px;
+  }
+
+  .setting-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 0;
+    border-bottom: 1px solid var(--border);
+    font-size: 12px;
+  }
+
+  .setting-row:last-child { border-bottom: none; }
+  .setting-label { color: var(--text); }
+  .setting-val { font-family: var(--font-mono); font-size: 11px; color: var(--accent); }
+
+  /* トグル */
+  .toggle {
+    position: relative;
+    width: 36px;
+    height: 20px;
+  }
+
+  .toggle input { opacity: 0; width: 0; height: 0; }
+
+  .toggle-slider {
+    position: absolute;
+    inset: 0;
+    background: var(--border);
+    border-radius: 10px;
+    cursor: pointer;
+    transition: background 0.2s;
+  }
+
+  .toggle-slider::before {
+    content: '';
+    position: absolute;
+    width: 14px; height: 14px;
+    left: 3px; top: 3px;
+    background: var(--muted);
+    border-radius: 50%;
+    transition: transform 0.2s, background 0.2s;
+  }
+
+  .toggle input:checked + .toggle-slider { background: rgba(0,255,136,0.2); }
+  .toggle input:checked + .toggle-slider::before {
+    transform: translateX(16px);
+    background: var(--accent3);
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="logo">SECURE<span style="color:var(--muted)">///</span>CAM</div>
+  <button class="logout-btn" onclick="logout()">LOGOUT</button>
+</div>
+
+<!-- カメラ名 -->
+<div class="cam-name-box">
+  <label class="cam-name-label">// カメラ名（任意）</label>
+  <input class="cam-name-input" id="cam-name" type="text" placeholder="例: 玄関カメラ" maxlength="20">
+</div>
+
+<!-- プレビュー -->
+<div class="preview-wrap">
+  <video id="preview" autoplay playsinline muted></video>
+  <div class="preview-overlay" id="preview-overlay">
+    <div class="preview-msg">📷<br><br>開始ボタンを押すと<br>カメラが起動します</div>
+  </div>
+</div>
+
+<!-- ステータス -->
+<div class="status-bar">
+  <div class="status-dot idle" id="status-dot"></div>
+  <div id="status-text">待機中</div>
+  <div id="motion-indicator">▲ 動体検知</div>
+</div>
+
+<!-- ボタン -->
+<div class="btn-row">
+  <button class="btn btn-start" id="btn-start" onclick="startCamera()">▶ 開始</button>
+  <button class="btn btn-stop" id="btn-stop" onclick="stopCamera()">■ 停止</button>
+  <button class="btn btn-flip" id="btn-flip" onclick="flipCamera()" title="カメラ切替">⇄</button>
+</div>
+
+<!-- 設定 -->
+<div class="settings">
+  <div class="settings-title">// 設定</div>
+  <div class="setting-row">
+    <span class="setting-label">動体検知</span>
+    <label class="toggle">
+      <input type="checkbox" id="motion-toggle" checked>
+      <span class="toggle-slider"></span>
+    </label>
+  </div>
+  <div class="setting-row">
+    <span class="setting-label">検知感度</span>
+    <span class="setting-val" id="sensitivity-val">中</span>
+  </div>
+  <div class="setting-row">
+    <span class="setting-label">接続状態</span>
+    <span class="setting-val" id="conn-state">未接続</span>
+  </div>
+</div>
+
+<!-- Firebase SDK -->
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
+<script src="firebase-config.js"></script>
+
+<script>
+  firebase.initializeApp(FIREBASE_CONFIG);
+  const auth = firebase.auth();
+  const db = firebase.database();
+
+  // 状態
+  let localStream = null;
+  let peerConnections = new Map(); // dashboardId -> RTCPeerConnection
+  let cameraId = null;
+  let facingMode = 'environment'; // 背面カメラ優先
+  let motionCanvas = null;
+  let motionCtx = null;
+  let prevFrame = null;
+  let motionTimer = null;
+  let isRunning = false;
+  let dashboardId = null;
+
+  // 認証チェック
+  auth.onAuthStateChanged(user => {
+    if (!user) {
+      window.location.href = 'index.html';
+      return;
+    }
+    cameraId = user.uid + '_' + Date.now();
+    listenForDashboard();
+  });
+
+  // ダッシュボードの登場を監視
+  function listenForDashboard() {
+    db.ref('dashboard').on('child_added', snap => {
+      dashboardId = snap.key;
+      if (isRunning && localStream) {
+        connectToDashboard(dashboardId);
+      }
+    });
+
+    db.ref('dashboard').on('child_removed', snap => {
+      const id = snap.key;
+      if (peerConnections.has(id)) {
+        peerConnections.get(id).close();
+        peerConnections.delete(id);
+      }
+      setStatus('idle', 'ダッシュボード切断');
+      document.getElementById('conn-state').textContent = '未接続';
+    });
+
+    // シグナリング受信（dashboardからのanswer・ICE）
+    db.ref(`signaling/${cameraId}`).on('child_added', snap => {
+      const msg = snap.val();
+      if (!msg) return;
+      snap.ref.remove();
+      handleSignaling(msg);
+    });
+  }
+
+  // カメラ開始
+  async function startCamera() {
+    const name = document.getElementById('cam-name').value.trim() || `Camera ${cameraId?.slice(0,6)}`;
+
+    setStatus('connecting', 'カメラ起動中...');
+
+    try {
+      const constraints = {
+        video: {
+          facingMode,
+          width: { ideal: 1280 },
+          height: { ideal: 720 }
+        },
+        audio: false
+      };
+
+      localStream = await navigator.mediaDevices.getUserMedia(constraints);
+      document.getElementById('preview').srcObject = localStream;
+      document.getElementById('preview-overlay').classList.add('hidden');
+
+      isRunning = true;
+
+      // UIを更新
+      document.getElementById('btn-start').style.display = 'none';
+      document.getElementById('btn-stop').style.display = 'flex';
+
+      // Firebaseにカメラ登録
+      const camRef = db.ref(`cameras/${cameraId}`);
+      camRef.set({ name, dashboardId, online: true, startedAt: Date.now() });
+      camRef.onDisconnect().remove();
+
+      // 動体検知の準備
+      setupMotionDetection();
+
+      // 既存のダッシュボードに接続
+      if (dashboardId) {
+        await connectToDashboard(dashboardId);
+      } else {
+        setStatus('connecting', 'ダッシュボード待機中...');
+      }
+
+    } catch (err) {
+      let msg = 'カメラの起動に失敗しました';
+      if (err.name === 'NotAllowedError') msg = 'カメラへのアクセスを許可してください';
+      else if (err.name === 'NotFoundError') msg = 'カメラが見つかりません';
+      setStatus('error', msg);
+    }
+  }
+
+  // ダッシュボードへ接続
+  async function connectToDashboard(dId) {
+    if (peerConnections.has(dId)) return;
+
+    const pc = new RTCPeerConnection({
+      iceServers: [
+        { urls: 'stun:stun.l.google.com:19302' },
+        { urls: 'stun:stun1.l.google.com:19302' }
+      ]
+    });
+
+    peerConnections.set(dId, pc);
+
+    // トラック追加
+    localStream.getTracks().forEach(track => pc.addTrack(track, localStream));
+
+    pc.onicecandidate = e => {
+      if (e.candidate) {
+        db.ref(`signaling/${dId}`).push({
+          type: 'ice-candidate',
+          candidate: e.candidate.toJSON(),
+          cameraId,
+          from: 'camera'
+        });
+      }
+    };
+
+    pc.onconnectionstatechange = () => {
+      const state = pc.connectionState;
+      document.getElementById('conn-state').textContent =
+        state === 'connected' ? 'ライブ配信中' :
+        state === 'connecting' ? '接続中...' :
+        state === 'disconnected' ? '切断' : state;
+
+      if (state === 'connected') setStatus('live', 'ライブ配信中');
+      else if (state === 'disconnected') setStatus('connecting', '再接続中...');
+    };
+
+    // Offerを作成してFirebaseへ
+    const offer = await pc.createOffer();
+    await pc.setLocalDescription(offer);
+
+    db.ref(`signaling/${dId}`).push({
+      type: 'offer',
+      sdp: offer.sdp,
+      cameraId,
+      cameraName: document.getElementById('cam-name').value.trim() || `Camera ${cameraId.slice(0,6)}`,
+      from: 'camera'
+    });
+  }
+
+  // シグナリング処理
+  async function handleSignaling(msg) {
+    const pc = peerConnections.get(msg.dashboardId || dashboardId);
+    if (!pc) return;
+
+    if (msg.type === 'answer') {
+      await pc.setRemoteDescription(new RTCSessionDescription({ type: 'answer', sdp: msg.sdp }));
+    } else if (msg.type === 'ice-candidate' && msg.candidate) {
+      try { await pc.addIceCandidate(new RTCIceCandidate(msg.candidate)); } catch(e) {}
+    }
+  }
+
+  // カメラ停止
+  function stopCamera() {
+    isRunning = false;
+
+    if (localStream) {
+      localStream.getTracks().forEach(t => t.stop());
+      localStream = null;
+    }
+
+    peerConnections.forEach(pc => pc.close());
+    peerConnections.clear();
+
+    if (cameraId) db.ref(`cameras/${cameraId}`).remove();
+    if (motionTimer) clearInterval(motionTimer);
+
+    document.getElementById('preview').srcObject = null;
+    document.getElementById('preview-overlay').classList.remove('hidden');
+    document.getElementById('btn-start').style.display = 'flex';
+    document.getElementById('btn-stop').style.display = 'none';
+    setStatus('idle', '待機中');
+    document.getElementById('conn-state').textContent = '未接続';
+  }
+
+  // カメラ切替（前面/背面）
+  async function flipCamera() {
+    facingMode = facingMode === 'environment' ? 'user' : 'environment';
+    const preview = document.getElementById('preview');
+    // セルフィーは左右反転
+    preview.style.transform = facingMode === 'user' ? 'scaleX(-1)' : 'scaleX(1)';
+
+    if (isRunning && localStream) {
+      const oldTracks = localStream.getVideoTracks();
+      const newStream = await navigator.mediaDevices.getUserMedia({
+        video: { facingMode },
+        audio: false
+      });
+      const newTrack = newStream.getVideoTracks()[0];
+
+      // 既存のPCのトラックを置き換え
+      peerConnections.forEach(pc => {
+        const sender = pc.getSenders().find(s => s.track?.kind === 'video');
+        if (sender) sender.replaceTrack(newTrack);
+      });
+
+      oldTracks.forEach(t => t.stop());
+      localStream = newStream;
+      preview.srcObject = localStream;
+    }
+  }
+
+  // 動体検知
+  function setupMotionDetection() {
+    motionCanvas = document.createElement('canvas');
+    motionCanvas.width = 160;
+    motionCanvas.height = 90;
+    motionCtx = motionCanvas.getContext('2d');
+    prevFrame = null;
+
+    motionTimer = setInterval(detectMotion, 500);
+  }
+
+  function detectMotion() {
+    if (!document.getElementById('motion-toggle').checked) return;
+    if (!localStream) return;
+
+    const video = document.getElementById('preview');
+    motionCtx.drawImage(video, 0, 0, 160, 90);
+    const frame = motionCtx.getImageData(0, 0, 160, 90);
+
+    if (!prevFrame) {
+      prevFrame = frame;
+      return;
+    }
+
+    let diff = 0;
+    for (let i = 0; i < frame.data.length; i += 4) {
+      const dr = Math.abs(frame.data[i] - prevFrame.data[i]);
+      const dg = Math.abs(frame.data[i+1] - prevFrame.data[i+1]);
+      const db = Math.abs(frame.data[i+2] - prevFrame.data[i+2]);
+      if ((dr + dg + db) > 60) diff++;
+    }
+
+    prevFrame = frame;
+    const threshold = 200; // 感度：低いほど敏感
+
+    if (diff > threshold) {
+      triggerMotionAlert();
+    }
+  }
+
+  let lastAlertTime = 0;
+
+  function triggerMotionAlert() {
+    const now = Date.now();
+    if (now - lastAlertTime < 5000) return; // 5秒クールダウン
+    lastAlertTime = now;
+
+    // UI
+    const indicator = document.getElementById('motion-indicator');
+    indicator.classList.add('show');
+    setTimeout(() => indicator.classList.remove('show'), 3000);
+
+    // Firebaseにアラートを送信
+    if (dashboardId && cameraId) {
+      db.ref(`alerts/${dashboardId}`).push({
+        cameraId,
+        cameraName: document.getElementById('cam-name').value.trim() || `Camera ${cameraId.slice(0,6)}`,
+        timestamp: now
+      });
+    }
+  }
+
+  // ステータス更新
+  function setStatus(state, text) {
+    const dot = document.getElementById('status-dot');
+    dot.className = `status-dot ${state}`;
+    document.getElementById('status-text').textContent = text;
+  }
+
+  function logout() {
+    stopCamera();
+    auth.signOut().then(() => { window.location.href = 'index.html'; });
+  }
+</script>
+</body>
+</html>
