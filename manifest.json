@@ -1,0 +1,36 @@
+{
+  "name": "SecureCam",
+  "short_name": "SecureCam",
+  "description": "防犯カメラ監視システム",
+  "start_url": "/securecam/",
+  "display": "standalone",
+  "background_color": "#080b10",
+  "theme_color": "#00d4ff",
+  "orientation": "any",
+  "icons": [
+    {
+      "src": "icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "ダッシュボード",
+      "url": "/securecam/dashboard.html",
+      "description": "監視ダッシュボードを開く"
+    },
+    {
+      "name": "カメラ起動",
+      "url": "/securecam/camera.html",
+      "description": "カメラを起動する"
+    }
+  ]
+}
