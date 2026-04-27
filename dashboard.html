@@ -434,6 +434,8 @@
 
   // カメラURLを表示
   function showCameraUrl() {
+    // 要素が存在するまで少し待つ
+    setTimeout(() => {
     const url = `${location.origin}${location.pathname.replace('dashboard.html','camera.html')}`;
     const el = document.getElementById('camera-url');
     el.textContent = url;
@@ -462,7 +464,7 @@
     // カメラの接続を監視
     db.ref('cameras').on('child_added', snap => {
       const cam = snap.val();
-      if (cam && cam.dashboardId === myId) {
+      if (cam) {
         addCamera(snap.key, cam);
       }
     });
