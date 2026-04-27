@@ -122,6 +122,25 @@
     box-shadow: 0 0 12px rgba(255, 68, 85, 0.5);
   }
 
+  .ver-badge {
+    display: inline-block;
+    margin-left: 10px;
+    padding: 2px 8px;
+    font-size: 10px;
+    color: var(--accent);
+    background: rgba(0, 212, 255, 0.1);
+    border: 1px solid rgba(0, 212, 255, 0.3);
+    border-radius: 3px;
+    letter-spacing: 1px;
+    cursor: pointer;
+    vertical-align: middle;
+    transition: all 0.2s;
+  }
+  .ver-badge:hover {
+    background: rgba(0, 212, 255, 0.25);
+    box-shadow: 0 0 8px rgba(0, 212, 255, 0.4);
+  }
+
   /* メインレイアウト */
   .main {
     display: flex;
@@ -366,7 +385,7 @@
 <body>
 
 <header>
-  <div class="logo">SECURE<span style="color:var(--muted)">///</span>CAM</div>
+  <div class="logo">SECURE<span style="color:var(--muted)">///</span>CAM<span class="ver-badge" onclick="window.open('index.html','_blank')">v1.1.1</span></div>
   <div class="header-stats">
     <div class="stat"><div class="dot" id="live-dot"></div>LIVE <span class="val" id="cam-count">0</span></div>
     <div class="stat">ALERT <span class="val" id="alert-count">0</span></div>
