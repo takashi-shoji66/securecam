@@ -285,6 +285,185 @@
     animation: fadeUp 0.6s ease-out 0.2s both;
   }
 
+  .version-info {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 6px;
+    padding: 8px 12px;
+    background: rgba(0, 212, 255, 0.05);
+    border: 1px solid rgba(0, 212, 255, 0.15);
+    border-radius: 4px;
+    max-width: 280px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  .ver-label {
+    font-size: 9px;
+    color: var(--muted);
+    letter-spacing: 2px;
+  }
+
+  .ver-num {
+    color: var(--accent);
+    font-size: 12px;
+    font-weight: 500;
+    letter-spacing: 1px;
+    cursor: pointer;
+    transition: text-shadow 0.2s;
+  }
+
+  .ver-num:hover {
+    text-shadow: 0 0 8px var(--accent);
+    text-decoration: underline;
+  }
+
+  .ver-date {
+    font-size: 9px;
+    color: var(--muted);
+    letter-spacing: 1px;
+  }
+
+  .secure-line {
+    font-size: 9px;
+    color: var(--muted);
+    letter-spacing: 2px;
+    opacity: 0.6;
+  }
+
+  /* 変更履歴ポップアップ */
+  #changelog-popup {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.85);
+    z-index: 300;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    backdrop-filter: blur(4px);
+  }
+
+  #changelog-popup.show {
+    display: flex !important;
+  }
+
+  .changelog-content {
+    background: var(--surface);
+    border: 1px solid var(--accent);
+    border-radius: 4px;
+    max-width: 480px;
+    width: 100%;
+    max-height: 80vh;
+    overflow-y: auto;
+    box-shadow: 0 0 30px rgba(0, 212, 255, 0.2);
+  }
+
+  .changelog-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 14px 18px;
+    border-bottom: 1px solid var(--border);
+    position: sticky;
+    top: 0;
+    background: var(--surface);
+  }
+
+  .changelog-title {
+    font-family: var(--font-mono);
+    font-size: 12px;
+    color: var(--accent);
+    letter-spacing: 2px;
+  }
+
+  .changelog-close {
+    color: var(--muted);
+    font-size: 24px;
+    cursor: pointer;
+    line-height: 1;
+    padding: 0 6px;
+    transition: color 0.2s;
+  }
+
+  .changelog-close:hover {
+    color: var(--accent2);
+  }
+
+  .changelog-body {
+    padding: 16px 18px;
+  }
+
+  .ver-entry {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 18px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .ver-entry:last-child {
+    border-bottom: none;
+    margin-bottom: 0;
+  }
+
+  .ver-tag {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--muted);
+    background: rgba(255, 255, 255, 0.04);
+    padding: 4px 10px;
+    border-radius: 3px;
+    height: fit-content;
+    letter-spacing: 1px;
+    flex-shrink: 0;
+    border: 1px solid var(--border);
+  }
+
+  .ver-tag.current {
+    color: var(--accent);
+    background: rgba(0, 212, 255, 0.1);
+    border-color: var(--accent);
+  }
+
+  .ver-info {
+    flex: 1;
+    text-align: left;
+  }
+
+  .ver-info-date {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    color: var(--muted);
+    margin-bottom: 6px;
+    letter-spacing: 1px;
+  }
+
+  .ver-info ul {
+    margin: 0;
+    padding-left: 16px;
+    list-style: none;
+  }
+
+  .ver-info li {
+    font-family: var(--font-ui);
+    font-size: 12px;
+    color: var(--text);
+    line-height: 1.7;
+    position: relative;
+    padding-left: 4px;
+  }
+
+  .ver-info li::before {
+    content: '▸';
+    position: absolute;
+    left: -14px;
+    color: var(--accent);
+    font-size: 10px;
+  }
+
   /* ステータスバー */
   .status-bar {
     position: fixed;
@@ -358,7 +537,59 @@
   </div>
 
   <div class="footer">
-    SECURE CONNECTION REQUIRED &nbsp;|&nbsp; v1.1.0
+    <div class="version-info">
+      <span class="ver-label">VERSION</span>
+      <span class="ver-num" onclick="toggleChangelog()">v1.1.1</span>
+      <span class="ver-date">2026.04.27</span>
+    </div>
+    <div class="secure-line">SECURE CONNECTION REQUIRED</div>
+  </div>
+
+  <!-- 変更履歴ポップアップ -->
+  <div id="changelog-popup" style="display:none;">
+    <div class="changelog-content">
+      <div class="changelog-header">
+        <span class="changelog-title">// 変更履歴</span>
+        <span class="changelog-close" onclick="toggleChangelog()">×</span>
+      </div>
+      <div class="changelog-body">
+        <div class="ver-entry">
+          <div class="ver-tag current">v1.1.1</div>
+          <div class="ver-info">
+            <div class="ver-info-date">2026.04.27</div>
+            <ul>
+              <li>WebRTC接続バグ修正（ICE candidate処理）</li>
+              <li>LOGOUTボタンの視認性改善</li>
+              <li>バージョン管理機能を追加</li>
+            </ul>
+          </div>
+        </div>
+        <div class="ver-entry">
+          <div class="ver-tag">v1.1.0</div>
+          <div class="ver-info">
+            <div class="ver-info-date">2026.04.27</div>
+            <ul>
+              <li>役割選択画面を追加</li>
+              <li>複数管理端末対応</li>
+              <li>PWA対応（ホーム画面追加可能）</li>
+              <li>前回の選択を記憶する機能</li>
+            </ul>
+          </div>
+        </div>
+        <div class="ver-entry">
+          <div class="ver-tag">v1.0.0</div>
+          <div class="ver-info">
+            <div class="ver-info-date">2026.04.26</div>
+            <ul>
+              <li>初回リリース</li>
+              <li>WebRTC P2P映像配信</li>
+              <li>動体検知・アラート機能</li>
+              <li>Firebase認証・Realtime Database連携</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
   </div>
 </div>
 
@@ -521,6 +752,19 @@
     localStorage.removeItem('sc_role');
     auth.signOut();
   }
+
+  function toggleChangelog() {
+    const popup = document.getElementById('changelog-popup');
+    popup.classList.toggle('show');
+  }
+
+  // 背景クリックで閉じる
+  document.addEventListener('click', (e) => {
+    const popup = document.getElementById('changelog-popup');
+    if (popup && popup.classList.contains('show') && e.target === popup) {
+      popup.classList.remove('show');
+    }
+  });
 </script>
 </body>
 </html>
