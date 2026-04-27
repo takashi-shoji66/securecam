@@ -105,16 +105,22 @@
 
   .btn-logout {
     font-family: var(--font-mono);
-    font-size: 9px;
+    font-size: 11px;
+    font-weight: 500;
     letter-spacing: 2px;
-    color: var(--muted);
-    background: transparent;
-    border: 1px solid var(--border);
-    padding: 5px 10px;
+    color: #ffffff;
+    background: rgba(255, 68, 85, 0.15);
+    border: 1.5px solid var(--accent2);
+    padding: 7px 14px;
     cursor: pointer;
     transition: all 0.2s;
+    border-radius: 4px;
   }
-  .btn-logout:hover { border-color: var(--accent2); color: var(--accent2); }
+  .btn-logout:hover { 
+    background: var(--accent2); 
+    color: #ffffff;
+    box-shadow: 0 0 12px rgba(255, 68, 85, 0.5);
+  }
 
   /* メインレイアウト */
   .main {
@@ -516,6 +522,7 @@
         db.ref(`signaling/${cameraId}`).push({
           type: 'ice-candidate',
           candidate: e.candidate.toJSON(),
+          dashboardId: myId,
           from: 'dashboard'
         });
       }

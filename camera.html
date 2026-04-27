@@ -58,16 +58,22 @@
 
   .logout-btn {
     font-family: var(--font-mono);
-    font-size: 9px;
+    font-size: 11px;
+    font-weight: 500;
     letter-spacing: 2px;
-    color: var(--muted);
-    background: transparent;
-    border: 1px solid var(--border);
-    padding: 5px 10px;
+    color: #ffffff;
+    background: rgba(255, 68, 85, 0.15);
+    border: 1.5px solid var(--accent2);
+    padding: 7px 14px;
     cursor: pointer;
     transition: all 0.2s;
+    border-radius: 4px;
   }
-  .logout-btn:hover { border-color: var(--accent2); color: var(--accent2); }
+  .logout-btn:hover { 
+    background: var(--accent2); 
+    color: #ffffff;
+    box-shadow: 0 0 12px rgba(255, 68, 85, 0.5);
+  }
 
   /* カメラ名入力 */
   .cam-name-box {
@@ -523,13 +529,33 @@
 
   // シグナリング処理
   async function handleSignaling(msg) {
-    const pc = peerConnections.get(msg.dashboardId);
-    if (!pc) return;
-
-    if (msg.type === 'answer') {
-      await pc.setRemoteDescription(new RTCSessionDescription({ type: 'answer', sdp: msg.sdp }));
+    // dashboardIdが指定されていればそれを使う、なければ全PCに試す
+    const targetId = msg.dashboardId || msg.from === 'dashboard' ? msg.dashboardId : null;
+    
+    if (msg.type === 'answer' && targetId) {
+      const pc = peerConnections.get(targetId);
+      if (!pc) {
+        console.warn('No PC for answer:', targetId);
+        return;
+      }
+      try {
+        await pc.setRemoteDescription(new RTCSessionDescription({ type: 'answer', sdp: msg.sdp }));
+        console.log('Answer set for', targetId);
+      } catch(e) {
+        console.error('setRemoteDescription failed:', e);
+      }
     } else if (msg.type === 'ice-candidate' && msg.candidate) {
-      try { await pc.addIceCandidate(new RTCIceCandidate(msg.candidate)); } catch(e) {}
+      // dashboardIdがあれば特定のPC、なければ全てに追加を試す
+      if (targetId && peerConnections.has(targetId)) {
+        try {
+          await peerConnections.get(targetId).addIceCandidate(new RTCIceCandidate(msg.candidate));
+        } catch(e) { console.warn('addIceCandidate failed:', e); }
+      } else {
+        // dashboardIdがない場合は全PCに追加（後方互換）
+        for (const pc of peerConnections.values()) {
+          try { await pc.addIceCandidate(new RTCIceCandidate(msg.candidate)); } catch(e) {}
+        }
+      }
     }
   }
 
