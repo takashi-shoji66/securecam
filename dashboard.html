@@ -63,7 +63,7 @@
   .camera-cell:hover { border-color:var(--accent); }
   .camera-cell.motion-alert { border-color:var(--accent2); animation:flash 0.5s ease-in-out infinite; }
   @keyframes flash { 0%,100%{border-color:var(--accent2)} 50%{border-color:transparent} }
-  .camera-cell video { width:100%; height:100%; object-fit:cover; display:block; }
+  .camera-cell video { width:100%; height:100%; object-fit:contain; background:#000; display:block; }
   .cam-label { position:absolute; top:8px; left:8px; font-family:var(--font-mono); font-size:10px; color:#fff; background:rgba(0,0,0,0.75); padding:3px 8px; border-left:2px solid var(--accent); letter-spacing:1px; }
   .cam-live { position:absolute; top:8px; right:8px; width:8px; height:8px; border-radius:50%; background:var(--accent3); animation:pulse 2s ease-in-out infinite; }
   .cam-live.connecting { background:#ffaa00; }
@@ -101,18 +101,74 @@
   .controls { padding:8px; border-top:1px solid var(--border); display:flex; gap:5px; flex-wrap:wrap; }
   .ctrl-btn { font-family:var(--font-mono); font-size:9px; letter-spacing:1px; text-transform:uppercase; padding:5px 8px; background:transparent; border:1px solid var(--border); color:var(--muted); cursor:pointer; transition:all 0.15s; flex:1; }
   .ctrl-btn:hover { border-color:var(--accent); color:var(--accent); }
+
+  /* === モバイル対応 === */
+  @media (max-width: 768px) {
+    /* ヘッダー：1行目にロゴ、2行目にステータス+LOGOUT */
+    header {
+      flex-wrap: wrap;
+      gap: 6px;
+      padding: 6px 10px;
+    }
+    .logo {
+      font-size: 12px;
+      letter-spacing: 2px;
+      width: 100%;
+    }
+    .header-stats {
+      flex: 1;
+      gap: 8px;
+    }
+    #clock { display: none; }
+    .btn-logout {
+      font-size: 10px;
+      padding: 6px 12px;
+      margin-left: auto;
+    }
+
+    /* メイン：縦並び */
+    .main { flex-direction: column; overflow-y: auto; overflow-x: hidden; }
+
+    /* カメラグリッド */
+    #camera-grid { flex: none; min-height: 55vh; }
+    #camera-grid.grid-1 { grid-template-columns: 1fr; grid-template-rows: 1fr; }
+    #camera-grid.grid-2 { grid-template-columns: 1fr; grid-template-rows: repeat(2, 1fr); }
+    #camera-grid.grid-3, #camera-grid.grid-4 { grid-template-columns: 1fr; grid-template-rows: repeat(auto-fill, minmax(180px, 1fr)); }
+
+    /* カメラセル：正しいアスペクト比で表示 */
+    .camera-cell { min-height: 25vh; }
+
+    /* サイドバー：下部に配置 */
+    .sidebar {
+      width: 100%;
+      border-left: none;
+      border-top: 1px solid var(--border);
+      max-height: 45vh;
+      flex-direction: column;
+    }
+    #alert-log { max-height: 200px; }
+  }
+
+  @media (max-width: 480px) {
+    .logo { font-size: 11px; gap: 6px; }
+    .ver-badge { font-size: 9px; padding: 1px 6px; }
+    .header-stats { gap: 6px; }
+    .stat { font-size: 9px; }
+    .stat .val { font-size: 11px; }
+    .btn-logout { font-size: 9px; padding: 5px 10px; letter-spacing: 1px; }
+  }
 </style>
 </head>
 <body>
 
 <header>
-  <div class="logo">SECURE<span style="color:var(--muted)">///</span>CAM <span class="ver-badge" onclick="window.open('index.html','_blank')">v1.1.2</span></div>
+  <div class="logo">SECURE<span style="color:var(--muted)">///</span>CAM <span class="ver-badge" onclick="window.open('index.html','_blank')">v1.1.3</span></div>
   <div class="header-stats">
     <div class="stat"><div class="dot" id="live-dot"></div>LIVE <span class="val" id="cam-count">0</span></div>
     <div class="stat">ALERT <span class="val" id="alert-count">0</span></div>
     <div id="clock"></div>
-    <button class="btn-logout" onclick="logout()">LOGOUT</button>
   </div>
+  <button class="btn-logout" onclick="logout()">LOGOUT</button>
 </header>
 
 <div class="main">
@@ -241,7 +297,7 @@
       ]
     });
 
-    const cam = { pc, name: camInfo.name || 'Camera ' + cameraId.slice(0,6), stream: null, cell: null };
+    const cam = { pc, name: (camInfo && camInfo.name) ? camInfo.name : ('カメラ ' + new Date().toTimeString().slice(0,5)), stream: null, cell: null };
     cameras.set(cameraId, cam);
 
     pc.ontrack = e => {

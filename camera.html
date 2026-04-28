@@ -85,7 +85,7 @@
 <body>
 
 <div class="header">
-  <div class="logo">SECURE<span style="color:var(--muted)">///</span>CAM <span class="ver-badge" onclick="window.open('index.html','_blank')">v1.1.2</span></div>
+  <div class="logo">SECURE<span style="color:var(--muted)">///</span>CAM <span class="ver-badge" onclick="window.open('index.html','_blank')">v1.1.3</span></div>
   <button class="btn-logout" onclick="logout()">LOGOUT</button>
 </div>
 
@@ -182,7 +182,7 @@
 
   // カメラ開始
   async function startCamera() {
-    cameraName = document.getElementById('cam-name').value.trim() || 'Camera ' + cameraId.slice(0,6);
+    cameraName = document.getElementById('cam-name').value.trim() || 'カメラ ' + new Date().toTimeString().slice(0,5);
     setStatus('connecting', 'カメラ起動中...');
 
     try {
