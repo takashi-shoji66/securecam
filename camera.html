@@ -14,328 +14,86 @@
 <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Zen+Kaku+Gothic+New:wght@300;400&display=swap" rel="stylesheet">
 <style>
   :root {
-    --bg: #080b10;
-    --surface: #0d1117;
-    --border: #1a2332;
-    --accent: #00d4ff;
-    --accent2: #ff4455;
-    --accent3: #00ff88;
-    --text: #c8dae8;
-    --muted: #3a5068;
-    --font-mono: 'Share Tech Mono', monospace;
-    --font-ui: 'Zen Kaku Gothic New', sans-serif;
+    --bg: #080b10; --surface: #0d1117; --border: #1a2332;
+    --accent: #00d4ff; --accent2: #ff4455; --accent3: #00ff88;
+    --text: #c8dae8; --muted: #3a5068;
+    --font-mono: 'Share Tech Mono', monospace; --font-ui: 'Zen Kaku Gothic New', sans-serif;
   }
+  * { box-sizing:border-box; margin:0; padding:0; }
+  body { background:var(--bg); color:var(--text); font-family:var(--font-ui); min-height:100vh; display:flex; flex-direction:column; align-items:center; padding:20px 16px 40px; }
 
-  * { box-sizing: border-box; margin: 0; padding: 0; }
-
-  body {
-    background: var(--bg);
-    color: var(--text);
-    font-family: var(--font-ui);
-    min-height: 100vh;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    padding: 20px 16px 40px;
-  }
-
-  /* ヘッダー */
-  .header {
-    width: 100%;
-    max-width: 480px;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    margin-bottom: 24px;
-  }
-
-  .logo {
-    font-family: var(--font-mono);
-    font-size: 13px;
-    color: var(--accent);
-    letter-spacing: 3px;
-  }
-
-  .logout-btn {
-    font-family: var(--font-mono);
-    font-size: 11px;
-    font-weight: 500;
-    letter-spacing: 2px;
-    color: #ffffff;
-    background: rgba(255, 68, 85, 0.15);
-    border: 1.5px solid var(--accent2);
-    padding: 7px 14px;
-    cursor: pointer;
-    transition: all 0.2s;
-    border-radius: 4px;
-  }
-  .logout-btn:hover { 
-    background: var(--accent2); 
-    color: #ffffff;
-    box-shadow: 0 0 12px rgba(255, 68, 85, 0.5);
-  }
-
+  .header { width:100%; max-width:480px; display:flex; align-items:center; justify-content:space-between; margin-bottom:24px; }
+  .logo { font-family:var(--font-mono); font-size:13px; color:var(--accent); letter-spacing:3px; display:flex; align-items:center; gap:10px; }
   .ver-badge {
-    display: inline-block;
-    margin-left: 10px;
-    padding: 2px 8px;
-    font-size: 10px;
-    color: var(--accent);
-    background: rgba(0, 212, 255, 0.1);
-    border: 1px solid rgba(0, 212, 255, 0.3);
-    border-radius: 3px;
-    letter-spacing: 1px;
-    cursor: pointer;
-    vertical-align: middle;
-    transition: all 0.2s;
+    display:inline-block; padding:2px 8px; font-size:10px; color:var(--accent);
+    background:rgba(0,212,255,0.1); border:1px solid rgba(0,212,255,0.3); border-radius:3px;
+    letter-spacing:1px; cursor:pointer; transition:all 0.2s;
   }
-  .ver-badge:hover {
-    background: rgba(0, 212, 255, 0.25);
-    box-shadow: 0 0 8px rgba(0, 212, 255, 0.4);
+  .ver-badge:hover { background:rgba(0,212,255,0.25); box-shadow:0 0 8px rgba(0,212,255,0.4); }
+  .btn-logout {
+    font-family:var(--font-mono); font-size:11px; font-weight:500; letter-spacing:2px;
+    color:#fff; background:rgba(255,68,85,0.8); border:1.5px solid var(--accent2);
+    padding:7px 14px; cursor:pointer; transition:all 0.2s; border-radius:4px;
   }
+  .btn-logout:hover { background:var(--accent2); box-shadow:0 0 12px rgba(255,68,85,0.5); }
 
-  /* カメラ名入力 */
-  .cam-name-box {
-    width: 100%;
-    max-width: 480px;
-    margin-bottom: 16px;
-  }
+  .cam-name-box { width:100%; max-width:480px; margin-bottom:16px; }
+  .cam-name-label { font-family:var(--font-mono); font-size:10px; color:var(--muted); letter-spacing:2px; margin-bottom:6px; display:block; }
+  .cam-name-input { width:100%; background:var(--surface); border:1px solid var(--border); color:var(--text); font-family:var(--font-mono); font-size:14px; padding:10px 12px; outline:none; border-radius:0; transition:border-color 0.2s; }
+  .cam-name-input:focus { border-color:var(--accent); }
 
-  .cam-name-label {
-    font-family: var(--font-mono);
-    font-size: 10px;
-    color: var(--muted);
-    letter-spacing: 2px;
-    margin-bottom: 6px;
-    display: block;
-  }
+  .preview-wrap { width:100%; max-width:480px; aspect-ratio:16/9; background:#000; border:1px solid var(--border); position:relative; overflow:hidden; margin-bottom:16px; }
+  #preview { width:100%; height:100%; object-fit:cover; display:block; }
+  .preview-overlay { position:absolute; inset:0; display:flex; align-items:center; justify-content:center; background:rgba(0,0,0,0.6); }
+  .preview-overlay.hidden { display:none; }
+  .preview-msg { text-align:center; font-family:var(--font-mono); font-size:12px; color:var(--muted); letter-spacing:1px; }
 
-  .cam-name-input {
-    width: 100%;
-    background: var(--surface);
-    border: 1px solid var(--border);
-    color: var(--text);
-    font-family: var(--font-mono);
-    font-size: 14px;
-    padding: 10px 12px;
-    outline: none;
-    border-radius: 0;
-    transition: border-color 0.2s;
-  }
-
-  .cam-name-input:focus { border-color: var(--accent); }
-
-  /* プレビュー */
-  .preview-wrap {
-    width: 100%;
-    max-width: 480px;
-    aspect-ratio: 16/9;
-    background: #000;
-    border: 1px solid var(--border);
-    position: relative;
-    overflow: hidden;
-    margin-bottom: 16px;
-  }
-
-  #preview {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    display: block;
-    transform: scaleX(-1); /* セルフィーモード */
-  }
-
-  .preview-overlay {
-    position: absolute;
-    inset: 0;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background: rgba(0,0,0,0.6);
-  }
-
-  .preview-overlay.hidden { display: none; }
-
-  .preview-msg {
-    text-align: center;
-    font-family: var(--font-mono);
-    font-size: 12px;
-    color: var(--muted);
-    letter-spacing: 1px;
-  }
-
-  /* ステータス */
-  .status-bar {
-    width: 100%;
-    max-width: 480px;
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    padding: 8px 12px;
-    background: var(--surface);
-    border: 1px solid var(--border);
-    margin-bottom: 16px;
-  }
-
-  .status-dot {
-    width: 8px; height: 8px;
-    border-radius: 50%;
-    flex-shrink: 0;
-  }
-
-  .status-dot.idle { background: var(--muted); }
-  .status-dot.connecting { background: #ffaa00; animation: pulse 0.8s ease-in-out infinite; }
-  .status-dot.live { background: var(--accent3); animation: pulse 2s ease-in-out infinite; }
-  .status-dot.error { background: var(--accent2); }
-
+  .status-bar-cam { width:100%; max-width:480px; display:flex; align-items:center; gap:10px; padding:8px 12px; background:var(--surface); border:1px solid var(--border); margin-bottom:16px; }
+  .status-dot { width:8px; height:8px; border-radius:50%; flex-shrink:0; }
+  .status-dot.idle { background:var(--muted); }
+  .status-dot.connecting { background:#ffaa00; animation:pulse 0.8s ease-in-out infinite; }
+  .status-dot.live { background:var(--accent3); animation:pulse 2s ease-in-out infinite; }
+  .status-dot.error { background:var(--accent2); }
   @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.2} }
+  #status-text { font-family:var(--font-mono); font-size:11px; color:var(--text); letter-spacing:1px; flex:1; }
+  #motion-indicator { font-family:var(--font-mono); font-size:10px; color:var(--accent2); display:none; animation:pulse 0.4s ease-in-out infinite; }
+  #motion-indicator.show { display:block; }
 
-  #status-text {
-    font-family: var(--font-mono);
-    font-size: 11px;
-    color: var(--text);
-    letter-spacing: 1px;
-    flex: 1;
-  }
+  .btn-row { width:100%; max-width:480px; display:flex; gap:10px; margin-bottom:16px; }
+  .btn-cam { flex:1; padding:14px; font-family:var(--font-mono); font-size:12px; letter-spacing:2px; text-transform:uppercase; cursor:pointer; border:1px solid; background:transparent; transition:all 0.2s; }
+  .btn-start { border-color:var(--accent3); color:var(--accent3); }
+  .btn-start:hover { background:rgba(0,255,136,0.1); }
+  .btn-start:disabled { opacity:0.3; cursor:not-allowed; }
+  .btn-stop { border-color:var(--accent2); color:var(--accent2); display:none; }
+  .btn-stop:hover { background:rgba(255,68,85,0.1); }
+  .btn-flip { flex:0 0 auto; border-color:var(--border); color:var(--muted); padding:14px 16px; }
+  .btn-flip:hover { border-color:var(--accent); color:var(--accent); }
 
-  #motion-indicator {
-    font-family: var(--font-mono);
-    font-size: 10px;
-    color: var(--accent2);
-    display: none;
-    animation: pulse 0.4s ease-in-out infinite;
-  }
-
-  #motion-indicator.show { display: block; }
-
-  /* ボタン */
-  .btn-row {
-    width: 100%;
-    max-width: 480px;
-    display: flex;
-    gap: 10px;
-    margin-bottom: 16px;
-  }
-
-  .btn {
-    flex: 1;
-    padding: 14px;
-    font-family: var(--font-mono);
-    font-size: 12px;
-    letter-spacing: 2px;
-    text-transform: uppercase;
-    cursor: pointer;
-    border: 1px solid;
-    background: transparent;
-    transition: all 0.2s;
-    position: relative;
-    overflow: hidden;
-  }
-
-  .btn-start {
-    border-color: var(--accent3);
-    color: var(--accent3);
-  }
-
-  .btn-start:hover { background: rgba(0,255,136,0.1); }
-  .btn-start:disabled { opacity: 0.3; cursor: not-allowed; }
-
-  .btn-stop {
-    border-color: var(--accent2);
-    color: var(--accent2);
-    display: none;
-  }
-
-  .btn-stop:hover { background: rgba(255,68,85,0.1); }
-
-  .btn-flip {
-    flex: 0 0 auto;
-    border-color: var(--border);
-    color: var(--muted);
-    padding: 14px 16px;
-  }
-
-  .btn-flip:hover { border-color: var(--accent); color: var(--accent); }
-
-  /* 設定 */
-  .settings {
-    width: 100%;
-    max-width: 480px;
-    background: var(--surface);
-    border: 1px solid var(--border);
-    padding: 14px;
-  }
-
-  .settings-title {
-    font-family: var(--font-mono);
-    font-size: 10px;
-    color: var(--muted);
-    letter-spacing: 2px;
-    margin-bottom: 12px;
-  }
-
-  .setting-row {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 8px 0;
-    border-bottom: 1px solid var(--border);
-    font-size: 12px;
-  }
-
-  .setting-row:last-child { border-bottom: none; }
-  .setting-label { color: var(--text); }
-  .setting-val { font-family: var(--font-mono); font-size: 11px; color: var(--accent); }
-
-  /* トグル */
-  .toggle {
-    position: relative;
-    width: 36px;
-    height: 20px;
-  }
-
-  .toggle input { opacity: 0; width: 0; height: 0; }
-
-  .toggle-slider {
-    position: absolute;
-    inset: 0;
-    background: var(--border);
-    border-radius: 10px;
-    cursor: pointer;
-    transition: background 0.2s;
-  }
-
-  .toggle-slider::before {
-    content: '';
-    position: absolute;
-    width: 14px; height: 14px;
-    left: 3px; top: 3px;
-    background: var(--muted);
-    border-radius: 50%;
-    transition: transform 0.2s, background 0.2s;
-  }
-
-  .toggle input:checked + .toggle-slider { background: rgba(0,255,136,0.2); }
-  .toggle input:checked + .toggle-slider::before {
-    transform: translateX(16px);
-    background: var(--accent3);
-  }
+  .settings { width:100%; max-width:480px; background:var(--surface); border:1px solid var(--border); padding:14px; }
+  .settings-title { font-family:var(--font-mono); font-size:10px; color:var(--muted); letter-spacing:2px; margin-bottom:12px; }
+  .setting-row { display:flex; justify-content:space-between; align-items:center; padding:8px 0; border-bottom:1px solid var(--border); font-size:12px; }
+  .setting-row:last-child { border-bottom:none; }
+  .setting-val { font-family:var(--font-mono); font-size:11px; color:var(--accent); }
+  .toggle { position:relative; width:36px; height:20px; }
+  .toggle input { opacity:0; width:0; height:0; }
+  .toggle-slider { position:absolute; inset:0; background:var(--border); border-radius:10px; cursor:pointer; transition:background 0.2s; }
+  .toggle-slider::before { content:''; position:absolute; width:14px; height:14px; left:3px; top:3px; background:var(--muted); border-radius:50%; transition:transform 0.2s,background 0.2s; }
+  .toggle input:checked + .toggle-slider { background:rgba(0,255,136,0.2); }
+  .toggle input:checked + .toggle-slider::before { transform:translateX(16px); background:var(--accent3); }
 </style>
 </head>
 <body>
 
 <div class="header">
-  <div class="logo">SECURE<span style="color:var(--muted)">///</span>CAM<span class="ver-badge" onclick="window.open('index.html','_blank')">v1.1.1</span></div>
-  <button class="logout-btn" onclick="logout()">LOGOUT</button>
+  <div class="logo">SECURE<span style="color:var(--muted)">///</span>CAM <span class="ver-badge" onclick="window.open('index.html','_blank')">v1.1.1</span></div>
+  <button class="btn-logout" onclick="logout()">LOGOUT</button>
 </div>
 
-<!-- カメラ名 -->
 <div class="cam-name-box">
   <label class="cam-name-label">// カメラ名（任意）</label>
   <input class="cam-name-input" id="cam-name" type="text" placeholder="例: 玄関カメラ" maxlength="20">
 </div>
 
-<!-- プレビュー -->
 <div class="preview-wrap">
   <video id="preview" autoplay playsinline muted></video>
   <div class="preview-overlay" id="preview-overlay">
@@ -343,38 +101,23 @@
   </div>
 </div>
 
-<!-- ステータス -->
-<div class="status-bar">
+<div class="status-bar-cam">
   <div class="status-dot idle" id="status-dot"></div>
   <div id="status-text">待機中</div>
   <div id="motion-indicator">▲ 動体検知</div>
 </div>
 
-<!-- ボタン -->
 <div class="btn-row">
-  <button class="btn btn-start" id="btn-start" onclick="startCamera()">▶ 開始</button>
-  <button class="btn btn-stop" id="btn-stop" onclick="stopCamera()">■ 停止</button>
-  <button class="btn btn-flip" id="btn-flip" onclick="flipCamera()" title="カメラ切替">⇄</button>
+  <button class="btn-cam btn-start" id="btn-start" onclick="startCamera()">▶ 開始</button>
+  <button class="btn-cam btn-stop" id="btn-stop" onclick="stopCamera()">■ 停止</button>
+  <button class="btn-cam btn-flip" onclick="flipCamera()" title="カメラ切替">⇄</button>
 </div>
 
-<!-- 設定 -->
 <div class="settings">
   <div class="settings-title">// 設定</div>
-  <div class="setting-row">
-    <span class="setting-label">動体検知</span>
-    <label class="toggle">
-      <input type="checkbox" id="motion-toggle" checked>
-      <span class="toggle-slider"></span>
-    </label>
-  </div>
-  <div class="setting-row">
-    <span class="setting-label">検知感度</span>
-    <span class="setting-val" id="sensitivity-val">中</span>
-  </div>
-  <div class="setting-row">
-    <span class="setting-label">接続状態</span>
-    <span class="setting-val" id="conn-state">未接続</span>
-  </div>
+  <div class="setting-row"><span>動体検知</span><label class="toggle"><input type="checkbox" id="motion-toggle" checked><span class="toggle-slider"></span></label></div>
+  <div class="setting-row"><span>検知感度</span><span class="setting-val">中</span></div>
+  <div class="setting-row"><span>接続状態</span><span class="setting-val" id="conn-state">未接続</span></div>
 </div>
 
 <!-- Firebase SDK -->
@@ -388,59 +131,48 @@
   const auth = firebase.auth();
   const db = firebase.database();
 
-  // 状態
   let localStream = null;
   let peerConnections = new Map(); // dashboardId -> RTCPeerConnection
   let cameraId = null;
+  let cameraName = '';
   let facingMode = 'environment';
-  let motionCanvas = null;
-  let motionCtx = null;
-  let prevFrame = null;
-  let motionTimer = null;
+  let motionCanvas = null, motionCtx = null, prevFrame = null, motionTimer = null;
   let isRunning = false;
-  const dashboardIds = new Set(); // 複数管理端末対応
 
-  // 認証チェック
+  // URLパラメータからカメラ名を取得
+  const urlParams = new URLSearchParams(window.location.search);
+  const nameFromUrl = urlParams.get('name');
+  if (nameFromUrl) document.getElementById('cam-name').value = nameFromUrl;
+
+  // 認証
   auth.onAuthStateChanged(user => {
-    if (!user) {
-      window.location.href = 'index.html';
-      return;
-    }
+    if (!user) { window.location.href = 'index.html'; return; }
     cameraId = user.uid + '_' + Date.now();
-
-    // index.htmlで入力したカメラ名を引き継ぐ
-    const savedName = sessionStorage.getItem('sc_cam_name');
-    if (savedName) {
-      document.getElementById('cam-name').value = savedName;
-      sessionStorage.removeItem('sc_cam_name');
-    }
-
     listenForDashboards();
   });
 
-  // 全ダッシュボードを監視（複数対応）
+  // 全ダッシュボードを監視
   function listenForDashboards() {
+    // 新しいダッシュボードが登場したら接続
     db.ref('dashboard').on('child_added', snap => {
       const dId = snap.key;
-      dashboardIds.add(dId);
-      updateConnStatus();
       if (isRunning && localStream) {
         connectToDashboard(dId);
       }
     });
 
+    // ダッシュボードが離脱したら切断
     db.ref('dashboard').on('child_removed', snap => {
       const dId = snap.key;
-      dashboardIds.delete(dId);
       if (peerConnections.has(dId)) {
         peerConnections.get(dId).close();
         peerConnections.delete(dId);
       }
-      updateConnStatus();
+      updateConnState();
     });
 
     // シグナリング受信
-    db.ref(`signaling/${cameraId}`).on('child_added', snap => {
+    db.ref('signaling/' + cameraId).on('child_added', snap => {
       const msg = snap.val();
       if (!msg) return;
       snap.ref.remove();
@@ -448,22 +180,9 @@
     });
   }
 
-  // 接続状態表示を更新
-  function updateConnStatus() {
-    const active = peerConnections.size;
-    const total = dashboardIds.size;
-    if (total === 0) {
-      document.getElementById('conn-state').textContent = '未接続';
-    } else if (active === 0) {
-      document.getElementById('conn-state').textContent = `待機中（${total}台検出）`;
-    } else {
-      document.getElementById('conn-state').textContent = `配信中（${active}/${total}台）`;
-    }
-  }
-
   // カメラ開始
   async function startCamera() {
-    const name = document.getElementById('cam-name').value.trim() || `Camera ${cameraId?.slice(0,6)}`;
+    cameraName = document.getElementById('cam-name').value.trim() || 'Camera ' + cameraId.slice(0,6);
     setStatus('connecting', 'カメラ起動中...');
 
     try {
@@ -479,21 +198,22 @@
       document.getElementById('btn-stop').style.display = 'flex';
 
       // Firebaseにカメラ登録
-      const camRef = db.ref(`cameras/${cameraId}`);
-      camRef.set({ name, online: true, startedAt: Date.now() });
+      const camRef = db.ref('cameras/' + cameraId);
+      camRef.set({ name: cameraName, online: true, startedAt: Date.now() });
       camRef.onDisconnect().remove();
 
+      // 動体検知
       setupMotionDetection();
 
       // 既存の全ダッシュボードに接続
-      if (dashboardIds.size > 0) {
-        for (const dId of dashboardIds) {
-          await connectToDashboard(dId);
-        }
+      const dashSnap = await db.ref('dashboard').once('value');
+      if (dashSnap.exists()) {
+        dashSnap.forEach(child => {
+          connectToDashboard(child.key);
+        });
       } else {
         setStatus('connecting', 'ダッシュボード待機中...');
       }
-
     } catch (err) {
       let msg = 'カメラの起動に失敗しました';
       if (err.name === 'NotAllowedError') msg = 'カメラへのアクセスを許可してください';
@@ -502,7 +222,7 @@
     }
   }
 
-  // ダッシュボードへ接続
+  // ダッシュボードへWebRTC接続
   async function connectToDashboard(dId) {
     if (peerConnections.has(dId)) return;
 
@@ -518,59 +238,45 @@
 
     pc.onicecandidate = e => {
       if (e.candidate) {
-        db.ref(`signaling/${dId}`).push({
+        db.ref('signaling/' + dId).push({
           type: 'ice-candidate',
           candidate: e.candidate.toJSON(),
-          cameraId,
+          cameraId: cameraId,
           from: 'camera'
         });
       }
     };
 
     pc.onconnectionstatechange = () => {
-      const connected = [...peerConnections.values()].filter(p => p.connectionState === 'connected').length;
-      if (connected > 0) setStatus('live', `ライブ配信中`);
-      else if (isRunning) setStatus('connecting', '接続中...');
-      updateConnStatus();
+      updateConnState();
     };
 
+    // Offer作成・送信
     const offer = await pc.createOffer();
     await pc.setLocalDescription(offer);
-
-    db.ref(`signaling/${dId}`).push({
+    db.ref('signaling/' + dId).push({
       type: 'offer',
       sdp: offer.sdp,
-      cameraId,
-      cameraName: document.getElementById('cam-name').value.trim() || `Camera ${cameraId.slice(0,6)}`,
+      cameraId: cameraId,
+      cameraName: cameraName,
       from: 'camera'
     });
   }
 
   // シグナリング処理
   async function handleSignaling(msg) {
-    // dashboardIdが指定されていればそれを使う、なければ全PCに試す
-    const targetId = msg.dashboardId || msg.from === 'dashboard' ? msg.dashboardId : null;
-    
-    if (msg.type === 'answer' && targetId) {
-      const pc = peerConnections.get(targetId);
-      if (!pc) {
-        console.warn('No PC for answer:', targetId);
-        return;
-      }
+    if (msg.type === 'answer' && msg.dashboardId) {
+      const pc = peerConnections.get(msg.dashboardId);
+      if (!pc) return;
       try {
         await pc.setRemoteDescription(new RTCSessionDescription({ type: 'answer', sdp: msg.sdp }));
-        console.log('Answer set for', targetId);
-      } catch(e) {
-        console.error('setRemoteDescription failed:', e);
-      }
+      } catch(e) { console.error('setRemoteDescription error:', e); }
+
     } else if (msg.type === 'ice-candidate' && msg.candidate) {
-      // dashboardIdがあれば特定のPC、なければ全てに追加を試す
-      if (targetId && peerConnections.has(targetId)) {
-        try {
-          await peerConnections.get(targetId).addIceCandidate(new RTCIceCandidate(msg.candidate));
-        } catch(e) { console.warn('addIceCandidate failed:', e); }
+      if (msg.dashboardId && peerConnections.has(msg.dashboardId)) {
+        try { await peerConnections.get(msg.dashboardId).addIceCandidate(new RTCIceCandidate(msg.candidate)); } catch(e) {}
       } else {
-        // dashboardIdがない場合は全PCに追加（後方互換）
+        // dashboardIdがない場合は全PCに追加
         for (const pc of peerConnections.values()) {
           try { await pc.addIceCandidate(new RTCIceCandidate(msg.candidate)); } catch(e) {}
         }
@@ -578,16 +284,31 @@
     }
   }
 
+  // 接続状態の更新
+  function updateConnState() {
+    let connected = 0;
+    peerConnections.forEach(pc => { if (pc.connectionState === 'connected') connected++; });
+
+    const el = document.getElementById('conn-state');
+    if (connected > 0) {
+      el.textContent = 'ライブ配信中（' + connected + '台）';
+      setStatus('live', 'ライブ配信中');
+    } else if (peerConnections.size > 0) {
+      el.textContent = '接続中...';
+      setStatus('connecting', '接続中...');
+    } else {
+      el.textContent = '未接続';
+      setStatus('connecting', 'ダッシュボード待機中...');
+    }
+  }
+
   // カメラ停止
   function stopCamera() {
     isRunning = false;
-    if (localStream) {
-      localStream.getTracks().forEach(t => t.stop());
-      localStream = null;
-    }
+    if (localStream) { localStream.getTracks().forEach(t => t.stop()); localStream = null; }
     peerConnections.forEach(pc => pc.close());
     peerConnections.clear();
-    if (cameraId) db.ref(`cameras/${cameraId}`).remove();
+    if (cameraId) db.ref('cameras/' + cameraId).remove();
     if (motionTimer) clearInterval(motionTimer);
 
     document.getElementById('preview').srcObject = null;
@@ -595,41 +316,37 @@
     document.getElementById('btn-start').style.display = 'flex';
     document.getElementById('btn-stop').style.display = 'none';
     setStatus('idle', '待機中');
-    updateConnStatus();
+    document.getElementById('conn-state').textContent = '未接続';
   }
 
   // カメラ切替
   async function flipCamera() {
     facingMode = facingMode === 'environment' ? 'user' : 'environment';
-    const preview = document.getElementById('preview');
-    preview.style.transform = facingMode === 'user' ? 'scaleX(-1)' : 'scaleX(1)';
-
     if (isRunning && localStream) {
+      const oldTracks = localStream.getVideoTracks();
       const newStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode }, audio: false });
       const newTrack = newStream.getVideoTracks()[0];
       peerConnections.forEach(pc => {
         const sender = pc.getSenders().find(s => s.track?.kind === 'video');
         if (sender) sender.replaceTrack(newTrack);
       });
-      localStream.getVideoTracks().forEach(t => t.stop());
+      oldTracks.forEach(t => t.stop());
       localStream = newStream;
-      preview.srcObject = localStream;
+      document.getElementById('preview').srcObject = localStream;
     }
   }
 
   // 動体検知
   function setupMotionDetection() {
     motionCanvas = document.createElement('canvas');
-    motionCanvas.width = 160;
-    motionCanvas.height = 90;
+    motionCanvas.width = 160; motionCanvas.height = 90;
     motionCtx = motionCanvas.getContext('2d');
     prevFrame = null;
     motionTimer = setInterval(detectMotion, 500);
   }
 
   function detectMotion() {
-    if (!document.getElementById('motion-toggle').checked) return;
-    if (!localStream) return;
+    if (!document.getElementById('motion-toggle').checked || !localStream) return;
     const video = document.getElementById('preview');
     motionCtx.drawImage(video, 0, 0, 160, 90);
     const frame = motionCtx.getImageData(0, 0, 160, 90);
@@ -639,15 +356,14 @@
     for (let i = 0; i < frame.data.length; i += 4) {
       const dr = Math.abs(frame.data[i] - prevFrame.data[i]);
       const dg = Math.abs(frame.data[i+1] - prevFrame.data[i+1]);
-      const db = Math.abs(frame.data[i+2] - prevFrame.data[i+2]);
-      if ((dr + dg + db) > 60) diff++;
+      const db2 = Math.abs(frame.data[i+2] - prevFrame.data[i+2]);
+      if ((dr + dg + db2) > 60) diff++;
     }
     prevFrame = frame;
     if (diff > 200) triggerMotionAlert();
   }
 
   let lastAlertTime = 0;
-
   function triggerMotionAlert() {
     const now = Date.now();
     if (now - lastAlertTime < 5000) return;
@@ -658,14 +374,17 @@
     setTimeout(() => indicator.classList.remove('show'), 3000);
 
     // 全ダッシュボードにアラート送信
-    const cameraName = document.getElementById('cam-name').value.trim() || `Camera ${cameraId.slice(0,6)}`;
-    dashboardIds.forEach(dId => {
-      db.ref(`alerts/${dId}`).push({ cameraId, cameraName, timestamp: now });
+    peerConnections.forEach((pc, dId) => {
+      db.ref('alerts/' + dId).push({
+        cameraId: cameraId,
+        cameraName: cameraName,
+        timestamp: now
+      });
     });
   }
 
   function setStatus(state, text) {
-    document.getElementById('status-dot').className = `status-dot ${state}`;
+    document.getElementById('status-dot').className = 'status-dot ' + state;
     document.getElementById('status-text').textContent = text;
   }
 

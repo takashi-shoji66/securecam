@@ -20,496 +20,175 @@
     --accent: #00d4ff;
     --accent-dim: rgba(0,212,255,0.12);
     --danger: #ff4455;
+    --success: #00ff88;
     --text: #c8dae8;
     --muted: #3a5068;
     --font-mono: 'Share Tech Mono', monospace;
     --font-ui: 'Zen Kaku Gothic New', sans-serif;
   }
-
   * { box-sizing: border-box; margin: 0; padding: 0; }
-
   body {
-    background: var(--bg);
-    color: var(--text);
-    font-family: var(--font-ui);
-    min-height: 100vh;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    overflow: hidden;
-    position: relative;
+    background: var(--bg); color: var(--text); font-family: var(--font-ui);
+    min-height: 100vh; display: flex; align-items: center; justify-content: center;
+    overflow: hidden; position: relative;
   }
-
-  /* 背景グリッド */
   body::before {
-    content: '';
-    position: fixed;
-    inset: 0;
-    background-image:
-      linear-gradient(rgba(0,212,255,0.03) 1px, transparent 1px),
+    content:''; position:fixed; inset:0;
+    background-image: linear-gradient(rgba(0,212,255,0.03) 1px, transparent 1px),
       linear-gradient(90deg, rgba(0,212,255,0.03) 1px, transparent 1px);
-    background-size: 40px 40px;
-    pointer-events: none;
+    background-size: 40px 40px; pointer-events:none;
   }
 
-  /* スキャンライン */
-  body::after {
-    content: '';
-    position: fixed;
-    inset: 0;
-    background: repeating-linear-gradient(
-      0deg,
-      transparent,
-      transparent 2px,
-      rgba(0,0,0,0.08) 2px,
-      rgba(0,0,0,0.08) 4px
-    );
-    pointer-events: none;
-    z-index: 100;
-  }
-
-  .container {
-    width: 100%;
-    max-width: 420px;
-    padding: 20px;
-    position: relative;
-    z-index: 10;
-  }
-
-  /* ロゴ */
-  .logo {
-    text-align: center;
-    margin-bottom: 40px;
-    animation: fadeDown 0.6s ease-out;
-  }
-
+  /* === 共通パーツ === */
+  .container { width:100%; max-width:420px; padding:20px; position:relative; z-index:10; }
+  .logo { text-align:center; margin-bottom:40px; animation:fadeDown 0.6s ease-out; }
   .logo-icon {
-    width: 64px;
-    height: 64px;
-    margin: 0 auto 16px;
-    border: 1.5px solid var(--accent);
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    position: relative;
-    animation: rotate-border 8s linear infinite;
+    width:64px; height:64px; margin:0 auto 16px; border:1.5px solid var(--accent);
+    border-radius:50%; display:flex; align-items:center; justify-content:center;
+    position:relative; animation:glow 4s ease-in-out infinite;
   }
-
-  .logo-icon::before {
-    content: '';
-    position: absolute;
-    inset: 4px;
-    border: 1px solid rgba(0,212,255,0.3);
-    border-radius: 50%;
+  .logo-icon::before { content:''; position:absolute; inset:4px; border:1px solid rgba(0,212,255,0.3); border-radius:50%; }
+  .logo-icon svg { width:28px; height:28px; fill:var(--accent); }
+  @keyframes glow {
+    0%,100%{box-shadow:0 0 0 0 rgba(0,212,255,0.4)} 50%{box-shadow:0 0 20px 4px rgba(0,212,255,0.2)}
   }
+  .logo-title { font-family:var(--font-mono); font-size:22px; color:var(--accent); letter-spacing:4px; text-transform:uppercase; }
+  .logo-sub { font-family:var(--font-mono); font-size:10px; color:var(--muted); letter-spacing:3px; margin-top:4px; }
 
-  .logo-icon svg {
-    width: 28px;
-    height: 28px;
-    fill: var(--accent);
-  }
-
-  @keyframes rotate-border {
-    0% { box-shadow: 0 0 0 0 rgba(0,212,255,0.4), inset 0 0 0 0 rgba(0,212,255,0.1); }
-    50% { box-shadow: 0 0 20px 4px rgba(0,212,255,0.2), inset 0 0 10px 0 rgba(0,212,255,0.05); }
-    100% { box-shadow: 0 0 0 0 rgba(0,212,255,0.4), inset 0 0 0 0 rgba(0,212,255,0.1); }
-  }
-
-  .logo-title {
-    font-family: var(--font-mono);
-    font-size: 22px;
-    color: var(--accent);
-    letter-spacing: 4px;
-    text-transform: uppercase;
-  }
-
-  .logo-sub {
-    font-family: var(--font-mono);
-    font-size: 10px;
-    color: var(--muted);
-    letter-spacing: 3px;
-    margin-top: 4px;
-  }
-
-  /* カード */
   .card {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    padding: 32px;
-    position: relative;
-    animation: fadeUp 0.6s ease-out 0.1s both;
+    background:var(--surface); border:1px solid var(--border); padding:32px;
+    position:relative; animation:fadeUp 0.6s ease-out 0.1s both;
   }
+  .card::before { content:''; position:absolute; top:0; left:0; right:0; height:2px; background:linear-gradient(90deg,transparent,var(--accent),transparent); }
+  .card-title { font-family:var(--font-mono); font-size:11px; color:var(--muted); letter-spacing:2px; text-transform:uppercase; margin-bottom:24px; }
 
-  .card::before {
-    content: '';
-    position: absolute;
-    top: 0; left: 0; right: 0;
-    height: 2px;
-    background: linear-gradient(90deg, transparent, var(--accent), transparent);
+  .form-group { margin-bottom:18px; }
+  label { display:block; font-family:var(--font-mono); font-size:10px; color:var(--muted); letter-spacing:2px; text-transform:uppercase; margin-bottom:8px; }
+  input[type="email"], input[type="password"], input[type="text"] {
+    width:100%; background:var(--bg); border:1px solid var(--border); color:var(--text);
+    font-family:var(--font-mono); font-size:14px; padding:12px 14px; outline:none;
+    transition:border-color 0.2s; -webkit-appearance:none; border-radius:0;
   }
+  input:focus { border-color:var(--accent); box-shadow:0 0 0 3px rgba(0,212,255,0.08); }
+  input::placeholder { color:var(--muted); }
 
-  .card-title {
-    font-family: var(--font-mono);
-    font-size: 11px;
-    color: var(--muted);
-    letter-spacing: 2px;
-    text-transform: uppercase;
-    margin-bottom: 24px;
-  }
-
-  /* フォーム */
-  .form-group {
-    margin-bottom: 18px;
-  }
-
-  label {
-    display: block;
-    font-family: var(--font-mono);
-    font-size: 10px;
-    color: var(--muted);
-    letter-spacing: 2px;
-    text-transform: uppercase;
-    margin-bottom: 8px;
-  }
-
-  input {
-    width: 100%;
-    background: var(--bg);
-    border: 1px solid var(--border);
-    color: var(--text);
-    font-family: var(--font-mono);
-    font-size: 14px;
-    padding: 12px 14px;
-    outline: none;
-    transition: border-color 0.2s;
-    -webkit-appearance: none;
-    border-radius: 0;
-  }
-
-  input:focus {
-    border-color: var(--accent);
-    box-shadow: 0 0 0 3px rgba(0,212,255,0.08);
-  }
-
-  input::placeholder { color: var(--muted); }
-
-  /* ボタン */
   .btn {
-    width: 100%;
-    padding: 14px;
-    background: transparent;
-    border: 1px solid var(--accent);
-    color: var(--accent);
-    font-family: var(--font-mono);
-    font-size: 13px;
-    letter-spacing: 3px;
-    text-transform: uppercase;
-    cursor: pointer;
-    margin-top: 8px;
-    transition: all 0.2s;
-    position: relative;
-    overflow: hidden;
+    width:100%; padding:14px; background:transparent; border:1px solid var(--accent);
+    color:var(--accent); font-family:var(--font-mono); font-size:13px; letter-spacing:3px;
+    text-transform:uppercase; cursor:pointer; margin-top:8px; transition:all 0.2s; position:relative; overflow:hidden;
   }
+  .btn:hover { background:rgba(0,212,255,0.1); }
+  .btn:disabled { opacity:0.4; cursor:not-allowed; pointer-events:none; }
 
-  .btn::before {
-    content: '';
-    position: absolute;
-    inset: 0;
-    background: var(--accent);
-    transform: translateX(-100%);
-    transition: transform 0.2s;
-    z-index: 0;
+  .btn-logout {
+    font-family:var(--font-mono); font-size:11px; font-weight:500; letter-spacing:2px;
+    color:#fff; background:rgba(255,68,85,0.8); border:1.5px solid var(--danger);
+    padding:7px 14px; cursor:pointer; transition:all 0.2s; border-radius:4px;
   }
+  .btn-logout:hover { background:var(--danger); box-shadow:0 0 12px rgba(255,68,85,0.5); }
 
-  .btn:hover::before { transform: translateX(0); }
-  .btn:hover { color: var(--bg); }
-  .btn span { position: relative; z-index: 1; }
-
-  .btn:disabled {
-    opacity: 0.4;
-    cursor: not-allowed;
-    pointer-events: none;
-  }
-
-  /* エラー */
   .error-msg {
-    background: rgba(255,68,85,0.1);
-    border: 1px solid rgba(255,68,85,0.3);
-    color: var(--danger);
-    font-family: var(--font-mono);
-    font-size: 11px;
-    padding: 10px 12px;
-    margin-top: 14px;
-    display: none;
-    letter-spacing: 0.5px;
+    background:rgba(255,68,85,0.1); border:1px solid rgba(255,68,85,0.3); color:var(--danger);
+    font-family:var(--font-mono); font-size:11px; padding:10px 12px; margin-top:14px; display:none;
   }
+  .error-msg.show { display:block; }
 
-  .error-msg.show { display: block; }
+  .loader { display:none; width:14px; height:14px; border:2px solid var(--accent); border-top-color:transparent; border-radius:50%; animation:spin 0.6s linear infinite; vertical-align:middle; margin-right:6px; }
+  .loading .loader { display:inline-block; }
+  .loading .btn-text { display:none; }
+  @keyframes spin { to{transform:rotate(360deg)} }
+  @keyframes fadeDown { from{opacity:0;transform:translateY(-16px)} to{opacity:1;transform:translateY(0)} }
+  @keyframes fadeUp { from{opacity:0;transform:translateY(16px)} to{opacity:1;transform:translateY(0)} }
 
-  /* ローダー */
-  .loader {
-    display: inline-block;
-    width: 14px;
-    height: 14px;
-    border: 2px solid var(--bg);
-    border-top-color: transparent;
-    border-radius: 50%;
-    animation: spin 0.6s linear infinite;
-    vertical-align: middle;
-    margin-right: 6px;
-    display: none;
-  }
-
-  .loading .loader { display: inline-block; }
-  .loading .btn-text { display: none; }
-
-  @keyframes spin { to { transform: rotate(360deg); } }
-  @keyframes fadeDown {
-    from { opacity: 0; transform: translateY(-16px); }
-    to { opacity: 1; transform: translateY(0); }
-  }
-  @keyframes fadeUp {
-    from { opacity: 0; transform: translateY(16px); }
-    to { opacity: 1; transform: translateY(0); }
-  }
-
-  /* フッター */
-  .footer {
-    text-align: center;
-    margin-top: 20px;
-    font-family: var(--font-mono);
-    font-size: 10px;
-    color: var(--muted);
-    letter-spacing: 1px;
-    animation: fadeUp 0.6s ease-out 0.2s both;
-  }
-
+  /* === バージョン === */
+  .footer { text-align:center; margin-top:20px; font-family:var(--font-mono); animation:fadeUp 0.6s ease-out 0.2s both; }
   .version-info {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    gap: 12px;
-    margin-bottom: 6px;
-    padding: 8px 12px;
-    background: rgba(0, 212, 255, 0.05);
-    border: 1px solid rgba(0, 212, 255, 0.15);
-    border-radius: 4px;
-    max-width: 280px;
-    margin-left: auto;
-    margin-right: auto;
+    display:inline-flex; align-items:center; gap:12px; padding:8px 14px;
+    background:rgba(0,212,255,0.05); border:1px solid rgba(0,212,255,0.15); border-radius:4px;
   }
+  .ver-label { font-size:9px; color:var(--muted); letter-spacing:2px; }
+  .ver-num { color:var(--accent); font-size:12px; font-weight:500; cursor:pointer; transition:text-shadow 0.2s; }
+  .ver-num:hover { text-shadow:0 0 8px var(--accent); text-decoration:underline; }
+  .ver-date { font-size:9px; color:var(--muted); }
 
-  .ver-label {
-    font-size: 9px;
-    color: var(--muted);
-    letter-spacing: 2px;
-  }
-
-  .ver-num {
-    color: var(--accent);
-    font-size: 12px;
-    font-weight: 500;
-    letter-spacing: 1px;
-    cursor: pointer;
-    transition: text-shadow 0.2s;
-  }
-
-  .ver-num:hover {
-    text-shadow: 0 0 8px var(--accent);
-    text-decoration: underline;
-  }
-
-  .ver-date {
-    font-size: 9px;
-    color: var(--muted);
-    letter-spacing: 1px;
-  }
-
-  .secure-line {
-    font-size: 9px;
-    color: var(--muted);
-    letter-spacing: 2px;
-    opacity: 0.6;
-  }
-
-  /* 変更履歴ポップアップ */
-  #changelog-popup {
-    position: fixed;
-    inset: 0;
-    background: rgba(0, 0, 0, 0.85);
-    z-index: 300;
-    display: none;
-    align-items: center;
-    justify-content: center;
-    padding: 20px;
-    backdrop-filter: blur(4px);
-  }
-
-  #changelog-popup.show {
-    display: flex !important;
-  }
-
-  .changelog-content {
-    background: var(--surface);
-    border: 1px solid var(--accent);
-    border-radius: 4px;
-    max-width: 480px;
-    width: 100%;
-    max-height: 80vh;
-    overflow-y: auto;
-    box-shadow: 0 0 30px rgba(0, 212, 255, 0.2);
-  }
-
-  .changelog-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 14px 18px;
-    border-bottom: 1px solid var(--border);
-    position: sticky;
-    top: 0;
-    background: var(--surface);
-  }
-
-  .changelog-title {
-    font-family: var(--font-mono);
-    font-size: 12px;
-    color: var(--accent);
-    letter-spacing: 2px;
-  }
-
-  .changelog-close {
-    color: var(--muted);
-    font-size: 24px;
-    cursor: pointer;
-    line-height: 1;
-    padding: 0 6px;
-    transition: color 0.2s;
-  }
-
-  .changelog-close:hover {
-    color: var(--accent2);
-  }
-
-  .changelog-body {
-    padding: 16px 18px;
-  }
-
-  .ver-entry {
-    display: flex;
-    gap: 12px;
-    margin-bottom: 18px;
-    padding-bottom: 16px;
-    border-bottom: 1px solid var(--border);
-  }
-
-  .ver-entry:last-child {
-    border-bottom: none;
-    margin-bottom: 0;
-  }
-
-  .ver-tag {
-    font-family: var(--font-mono);
-    font-size: 11px;
-    color: var(--muted);
-    background: rgba(255, 255, 255, 0.04);
-    padding: 4px 10px;
-    border-radius: 3px;
-    height: fit-content;
-    letter-spacing: 1px;
-    flex-shrink: 0;
-    border: 1px solid var(--border);
-  }
-
-  .ver-tag.current {
-    color: var(--accent);
-    background: rgba(0, 212, 255, 0.1);
-    border-color: var(--accent);
-  }
-
-  .ver-info {
-    flex: 1;
-    text-align: left;
-  }
-
-  .ver-info-date {
-    font-family: var(--font-mono);
-    font-size: 10px;
-    color: var(--muted);
-    margin-bottom: 6px;
-    letter-spacing: 1px;
-  }
-
-  .ver-info ul {
-    margin: 0;
-    padding-left: 16px;
-    list-style: none;
-  }
-
-  .ver-info li {
-    font-family: var(--font-ui);
-    font-size: 12px;
-    color: var(--text);
-    line-height: 1.7;
-    position: relative;
-    padding-left: 4px;
-  }
-
-  .ver-info li::before {
-    content: '▸';
-    position: absolute;
-    left: -14px;
-    color: var(--accent);
-    font-size: 10px;
-  }
-
-  /* ステータスバー */
+  /* === ステータスバー === */
   .status-bar {
-    position: fixed;
-    bottom: 0; left: 0; right: 0;
-    background: var(--surface);
-    border-top: 1px solid var(--border);
-    padding: 6px 16px;
-    display: flex;
-    gap: 16px;
-    align-items: center;
-    z-index: 10;
+    position:fixed; bottom:0; left:0; right:0; background:var(--surface);
+    border-top:1px solid var(--border); padding:6px 16px; display:flex; gap:16px; align-items:center; z-index:10;
   }
+  .status-item { font-family:var(--font-mono); font-size:9px; color:var(--muted); letter-spacing:1px; display:flex; align-items:center; gap:5px; }
+  .status-dot { width:6px; height:6px; border-radius:50%; background:var(--accent); animation:pulse 2s ease-in-out infinite; }
+  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.3} }
 
-  .status-item {
-    font-family: var(--font-mono);
-    font-size: 9px;
-    color: var(--muted);
-    letter-spacing: 1px;
-    display: flex;
-    align-items: center;
-    gap: 5px;
+  /* === 役割選択画面 === */
+  .role-screen {
+    display:none; position:fixed; inset:0; background:var(--bg); z-index:200;
+    flex-direction:column; align-items:center; justify-content:center; padding:20px;
   }
+  .role-screen.show { display:flex; }
+  .role-title { font-family:var(--font-mono); font-size:14px; color:var(--accent); letter-spacing:3px; margin-bottom:8px; }
+  .role-sub { font-family:var(--font-mono); font-size:10px; color:var(--muted); letter-spacing:2px; margin-bottom:40px; }
+  .role-buttons { display:flex; flex-direction:column; gap:14px; width:100%; max-width:400px; }
+  .role-btn {
+    width:100%; padding:20px 16px; background:transparent; font-family:var(--font-mono);
+    font-size:13px; letter-spacing:2px; cursor:pointer; display:flex; align-items:center;
+    gap:14px; transition:background 0.2s; text-align:left;
+  }
+  .role-btn.dash { border:1px solid var(--accent); color:var(--accent); }
+  .role-btn.dash:hover { background:rgba(0,212,255,0.08); }
+  .role-btn.cam { border:1px solid var(--success); color:var(--success); }
+  .role-btn.cam:hover { background:rgba(0,255,136,0.08); }
+  .role-btn-icon { font-size:22px; }
+  .role-btn-label { font-size:13px; letter-spacing:2px; }
+  .role-btn-desc { font-size:10px; color:var(--muted); margin-top:4px; letter-spacing:1px; }
 
-  .status-dot {
-    width: 6px; height: 6px;
-    border-radius: 50%;
-    background: var(--accent);
-    animation: pulse 2s ease-in-out infinite;
-  }
+  .remember-wrap { margin-top:24px; display:flex; align-items:center; gap:8px; }
+  .remember-wrap label { font-size:10px; margin-bottom:0; cursor:pointer; }
 
-  @keyframes pulse {
-    0%, 100% { opacity: 1; }
-    50% { opacity: 0.3; }
+  /* カメラ名入力 */
+  .cam-name-wrap { display:none; width:100%; max-width:400px; margin-bottom:16px; }
+  .cam-name-wrap.show { display:block; }
+
+  /* === 変更履歴ポップアップ === */
+  .changelog-overlay {
+    display:none; position:fixed; inset:0; background:rgba(0,0,0,0.85); z-index:300;
+    align-items:center; justify-content:center; padding:20px; backdrop-filter:blur(4px);
   }
+  .changelog-overlay.show { display:flex; }
+  .changelog-content {
+    background:var(--surface); border:1px solid var(--accent); border-radius:4px;
+    max-width:480px; width:100%; max-height:80vh; overflow-y:auto; box-shadow:0 0 30px rgba(0,212,255,0.2);
+  }
+  .changelog-header {
+    display:flex; justify-content:space-between; align-items:center; padding:14px 18px;
+    border-bottom:1px solid var(--border); position:sticky; top:0; background:var(--surface);
+  }
+  .changelog-title { font-family:var(--font-mono); font-size:12px; color:var(--accent); letter-spacing:2px; }
+  .changelog-close { color:var(--muted); font-size:24px; cursor:pointer; padding:0 6px; transition:color 0.2s; }
+  .changelog-close:hover { color:var(--danger); }
+  .changelog-body { padding:16px 18px; }
+  .ver-entry { display:flex; gap:12px; margin-bottom:18px; padding-bottom:16px; border-bottom:1px solid var(--border); }
+  .ver-entry:last-child { border-bottom:none; margin-bottom:0; }
+  .ver-tag {
+    font-family:var(--font-mono); font-size:11px; color:var(--muted);
+    background:rgba(255,255,255,0.04); padding:4px 10px; border-radius:3px;
+    height:fit-content; letter-spacing:1px; flex-shrink:0; border:1px solid var(--border);
+  }
+  .ver-tag.current { color:var(--accent); background:rgba(0,212,255,0.1); border-color:var(--accent); }
+  .ver-info { flex:1; text-align:left; }
+  .ver-info-date { font-family:var(--font-mono); font-size:10px; color:var(--muted); margin-bottom:6px; }
+  .ver-info ul { margin:0; padding-left:16px; list-style:none; }
+  .ver-info li { font-size:12px; color:var(--text); line-height:1.7; position:relative; padding-left:4px; }
+  .ver-info li::before { content:'▸'; position:absolute; left:-14px; color:var(--accent); font-size:10px; }
 </style>
 </head>
 <body>
 
-<div class="container">
+<!-- ===== ログイン画面 ===== -->
+<div class="container" id="login-screen">
   <div class="logo">
     <div class="logo-icon">
-      <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-        <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 14H9V8h2v8zm4 0h-2V8h2v8z"/>
-        <circle cx="12" cy="12" r="3"/>
-        <path d="M9 9l6 6M15 9l-6 6" stroke-width="0.5" fill="none"/>
-      </svg>
+      <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2z" opacity="0.3"/></svg>
     </div>
     <div class="logo-title">SecureCam</div>
     <div class="logo-sub">Security Monitoring System</div>
@@ -517,22 +196,18 @@
 
   <div class="card">
     <div class="card-title">// 認証が必要です</div>
-
     <div class="form-group">
       <label>メールアドレス</label>
       <input type="email" id="email" placeholder="your@email.com" autocomplete="email">
     </div>
-
     <div class="form-group">
       <label>パスワード</label>
       <input type="password" id="password" placeholder="••••••••" autocomplete="current-password">
     </div>
-
     <button class="btn" id="login-btn" onclick="handleLogin()">
       <span class="loader"></span>
-      <span class="btn-text"><span>ログイン</span></span>
+      <span class="btn-text">ログイン</span>
     </button>
-
     <div class="error-msg" id="error-msg"></div>
   </div>
 
@@ -542,106 +217,45 @@
       <span class="ver-num" onclick="toggleChangelog()">v1.1.1</span>
       <span class="ver-date">2026.04.27</span>
     </div>
-    <div class="secure-line">SECURE CONNECTION REQUIRED</div>
-  </div>
-
-  <!-- 変更履歴ポップアップ -->
-  <div id="changelog-popup" style="display:none;">
-    <div class="changelog-content">
-      <div class="changelog-header">
-        <span class="changelog-title">// 変更履歴</span>
-        <span class="changelog-close" onclick="toggleChangelog()">×</span>
-      </div>
-      <div class="changelog-body">
-        <div class="ver-entry">
-          <div class="ver-tag current">v1.1.1</div>
-          <div class="ver-info">
-            <div class="ver-info-date">2026.04.27</div>
-            <ul>
-              <li>WebRTC接続バグ修正（ICE candidate処理）</li>
-              <li>LOGOUTボタンの視認性改善</li>
-              <li>バージョン管理機能を追加</li>
-            </ul>
-          </div>
-        </div>
-        <div class="ver-entry">
-          <div class="ver-tag">v1.1.0</div>
-          <div class="ver-info">
-            <div class="ver-info-date">2026.04.27</div>
-            <ul>
-              <li>役割選択画面を追加</li>
-              <li>複数管理端末対応</li>
-              <li>PWA対応（ホーム画面追加可能）</li>
-              <li>前回の選択を記憶する機能</li>
-            </ul>
-          </div>
-        </div>
-        <div class="ver-entry">
-          <div class="ver-tag">v1.0.0</div>
-          <div class="ver-info">
-            <div class="ver-info-date">2026.04.26</div>
-            <ul>
-              <li>初回リリース</li>
-              <li>WebRTC P2P映像配信</li>
-              <li>動体検知・アラート機能</li>
-              <li>Firebase認証・Realtime Database連携</li>
-            </ul>
-          </div>
-        </div>
-      </div>
-    </div>
   </div>
 </div>
 
-<!-- 役割選択画面 -->
-<div id="role-screen" style="display:none; position:fixed; inset:0; background:var(--bg); z-index:200; flex-direction:column; align-items:center; justify-content:center; padding:20px;">
-  <div style="font-family:var(--font-mono); font-size:14px; color:var(--accent); letter-spacing:3px; margin-bottom:8px;">SECURECAM</div>
-  <div style="font-family:var(--font-mono); font-size:10px; color:var(--muted); letter-spacing:2px; margin-bottom:40px;">この端末の役割を選択してください</div>
+<!-- ===== 役割選択画面 ===== -->
+<div class="role-screen" id="role-screen">
+  <div class="role-title">SECURECAM</div>
+  <div class="role-sub">この端末の役割を選択してください</div>
 
-  <!-- カメラ名入力（カメラ選択時のみ表示） -->
-  <div id="cam-name-wrap" style="display:none; width:100%; max-width:400px; margin-bottom:16px;">
-    <div style="font-family:var(--font-mono); font-size:10px; color:var(--muted); letter-spacing:2px; margin-bottom:6px;">// カメラ名（任意）</div>
-    <input id="cam-name-input" type="text" maxlength="20" placeholder="例: 玄関カメラ"
-      style="width:100%; background:var(--surface); border:1px solid var(--border); color:var(--text); font-family:var(--font-mono); font-size:14px; padding:10px 12px; outline:none; border-radius:0;">
+  <div class="cam-name-wrap" id="cam-name-wrap">
+    <label>// カメラ名（任意）</label>
+    <input id="cam-name-input" type="text" maxlength="20" placeholder="例: 玄関カメラ">
   </div>
 
-  <div style="display:flex; flex-direction:column; gap:14px; width:100%; max-width:400px;">
-
-    <!-- 管理ダッシュボード -->
-    <button onclick="goTo('dashboard')"
-      style="width:100%; padding:20px 16px; background:transparent; border:1px solid var(--accent); color:var(--accent); font-family:var(--font-mono); font-size:13px; letter-spacing:2px; cursor:pointer; display:flex; align-items:center; gap:14px; transition:background 0.2s;"
-      onmouseover="this.style.background='rgba(0,212,255,0.08)'" onmouseout="this.style.background='transparent'">
-      <span style="font-size:22px;">🖥</span>
+  <div class="role-buttons">
+    <button class="role-btn dash" onclick="goTo('dashboard')">
+      <span class="role-btn-icon">🖥</span>
       <span>
-        <div style="font-size:13px; letter-spacing:2px;">管理ダッシュボード</div>
-        <div style="font-size:10px; color:var(--muted); margin-top:4px; letter-spacing:1px;">全カメラの映像を監視する</div>
+        <div class="role-btn-label">管理ダッシュボード</div>
+        <div class="role-btn-desc">全カメラの映像を監視する</div>
       </span>
     </button>
-
-    <!-- カメラとして起動 -->
-    <button onclick="selectCamera()"
-      style="width:100%; padding:20px 16px; background:transparent; border:1px solid #00ff88; color:#00ff88; font-family:var(--font-mono); font-size:13px; letter-spacing:2px; cursor:pointer; display:flex; align-items:center; gap:14px; transition:background 0.2s;"
-      onmouseover="this.style.background='rgba(0,255,136,0.08)'" onmouseout="this.style.background='transparent'">
-      <span style="font-size:22px;">📷</span>
+    <button class="role-btn cam" onclick="selectCamera()">
+      <span class="role-btn-icon">📷</span>
       <span>
-        <div style="font-size:13px; letter-spacing:2px;">カメラとして起動</div>
-        <div style="font-size:10px; color:var(--muted); margin-top:4px; letter-spacing:1px;">この端末の映像を送信する</div>
+        <div class="role-btn-label">カメラとして起動</div>
+        <div class="role-btn-desc">この端末の映像を送信する</div>
       </span>
     </button>
-
   </div>
 
-  <!-- 前回の選択を記憶 -->
-  <div style="margin-top:24px; display:flex; align-items:center; gap:8px;">
+  <div class="remember-wrap">
     <input type="checkbox" id="remember-role" style="cursor:pointer;">
-    <label for="remember-role" style="font-family:var(--font-mono); font-size:10px; color:var(--muted); letter-spacing:1px; cursor:pointer;">次回から自動的にこの役割で起動</label>
+    <label for="remember-role">次回から自動的にこの役割で起動</label>
   </div>
 
-  <button onclick="logout()" style="margin-top:24px; font-family:var(--font-mono); font-size:9px; letter-spacing:2px; color:var(--muted); background:transparent; border:1px solid var(--border); padding:6px 14px; cursor:pointer;">LOGOUT</button>
+  <button class="btn-logout" onclick="logout()" style="margin-top:24px;">LOGOUT</button>
 
-  <!-- バージョン表示 -->
-  <div style="position:absolute; bottom:50px; left:50%; transform:translateX(-50%);">
-    <div class="version-info" style="margin:0;">
+  <div class="footer" style="position:absolute; bottom:50px; left:50%; transform:translateX(-50%);">
+    <div class="version-info">
       <span class="ver-label">VERSION</span>
       <span class="ver-num" onclick="toggleChangelog()">v1.1.1</span>
       <span class="ver-date">2026.04.27</span>
@@ -649,6 +263,54 @@
   </div>
 </div>
 
+<!-- ===== 変更履歴ポップアップ ===== -->
+<div class="changelog-overlay" id="changelog-popup" onclick="if(event.target===this)toggleChangelog()">
+  <div class="changelog-content">
+    <div class="changelog-header">
+      <span class="changelog-title">// 変更履歴</span>
+      <span class="changelog-close" onclick="toggleChangelog()">×</span>
+    </div>
+    <div class="changelog-body">
+      <div class="ver-entry">
+        <div class="ver-tag current">v1.1.1</div>
+        <div class="ver-info">
+          <div class="ver-info-date">2026.04.27</div>
+          <ul>
+            <li>WebRTCバグ修正（ICE candidate処理）</li>
+            <li>LOGOUTボタンの視認性改善</li>
+            <li>バージョン管理機能を追加</li>
+          </ul>
+        </div>
+      </div>
+      <div class="ver-entry">
+        <div class="ver-tag">v1.1.0</div>
+        <div class="ver-info">
+          <div class="ver-info-date">2026.04.27</div>
+          <ul>
+            <li>役割選択画面を追加</li>
+            <li>複数管理端末対応</li>
+            <li>PWA対応（ホーム画面追加可能）</li>
+            <li>前回の選択を記憶する機能</li>
+          </ul>
+        </div>
+      </div>
+      <div class="ver-entry">
+        <div class="ver-tag">v1.0.0</div>
+        <div class="ver-info">
+          <div class="ver-info-date">2026.04.26</div>
+          <ul>
+            <li>初回リリース</li>
+            <li>WebRTC P2P映像配信</li>
+            <li>動体検知・アラート機能</li>
+            <li>Firebase認証・Realtime Database連携</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== ステータスバー ===== -->
 <div class="status-bar">
   <div class="status-item"><div class="status-dot"></div> SYSTEM ONLINE</div>
   <div class="status-item" id="time-display"></div>
@@ -664,55 +326,32 @@
   firebase.initializeApp(FIREBASE_CONFIG);
   const auth = firebase.auth();
 
-  // 時刻表示
+  // 時刻
   function updateTime() {
     const now = new Date();
     document.getElementById('time-display').textContent =
-      now.toLocaleDateString('ja-JP') + ' ' + now.toTimeString().slice(0, 8);
+      now.toLocaleDateString('ja-JP') + ' ' + now.toTimeString().slice(0,8);
   }
   setInterval(updateTime, 1000);
   updateTime();
 
-  // ログイン状態を監視
+  // 認証状態の監視
   auth.onAuthStateChanged(user => {
     if (user) {
-      // 記憶した役割があれば自動遷移
+      // ログイン済み → 前回の役割を確認
       const saved = localStorage.getItem('sc_role');
       if (saved === 'dashboard') {
         window.location.href = 'dashboard.html';
       } else if (saved === 'camera') {
-        window.location.href = 'camera.html';
+        const name = localStorage.getItem('sc_cam_name') || '';
+        window.location.href = 'camera.html' + (name ? '?name=' + encodeURIComponent(name) : '');
       } else {
         // 役割選択画面を表示
-        document.getElementById('role-screen').style.display = 'flex';
+        document.getElementById('login-screen').style.display = 'none';
+        document.getElementById('role-screen').classList.add('show');
       }
     }
   });
-
-  // カメラ選択：名前入力欄を表示
-  function selectCamera() {
-    const wrap = document.getElementById('cam-name-wrap');
-    if (wrap.style.display === 'none') {
-      wrap.style.display = 'block';
-      document.getElementById('cam-name-input').focus();
-    } else {
-      goTo('camera');
-    }
-  }
-
-  // 役割を決定して遷移
-  function goTo(role) {
-    if (document.getElementById('remember-role').checked) {
-      localStorage.setItem('sc_role', role);
-    }
-    if (role === 'camera') {
-      const name = document.getElementById('cam-name-input').value.trim();
-      if (name) sessionStorage.setItem('sc_cam_name', name);
-      window.location.href = 'camera.html';
-    } else {
-      window.location.href = 'dashboard.html';
-    }
-  }
 
   // Enterキーでログイン
   document.getElementById('password').addEventListener('keydown', e => {
@@ -723,25 +362,23 @@
     const email = document.getElementById('email').value.trim();
     const password = document.getElementById('password').value;
     const btn = document.getElementById('login-btn');
-    const errorMsg = document.getElementById('error-msg');
+    const errorEl = document.getElementById('error-msg');
 
-    if (!email || !password) {
-      showError('メールアドレスとパスワードを入力してください');
-      return;
-    }
+    if (!email || !password) { showError('メールアドレスとパスワードを入力してください'); return; }
 
     btn.classList.add('loading');
     btn.disabled = true;
-    errorMsg.classList.remove('show');
+    errorEl.classList.remove('show');
 
     try {
       await auth.signInWithEmailAndPassword(email, password);
+      // onAuthStateChanged が役割選択画面を表示
     } catch (err) {
       let msg = 'ログインに失敗しました';
       if (err.code === 'auth/user-not-found' || err.code === 'auth/wrong-password' || err.code === 'auth/invalid-credential') {
         msg = 'メールアドレスまたはパスワードが正しくありません';
       } else if (err.code === 'auth/too-many-requests') {
-        msg = 'ログイン試行回数が多すぎます。しばらく待ってから再試行してください';
+        msg = 'ログイン試行回数が多すぎます。しばらく待ってください';
       } else if (err.code === 'auth/network-request-failed') {
         msg = 'ネットワークエラーが発生しました';
       }
@@ -757,23 +394,51 @@
     el.classList.add('show');
   }
 
+  // 役割選択
+  function selectCamera() {
+    document.getElementById('cam-name-wrap').classList.add('show');
+    // 2回目クリックで遷移
+    const name = document.getElementById('cam-name-input').value.trim();
+    if (document.getElementById('cam-name-wrap').classList.contains('show') && name !== '') {
+      goTo('camera');
+      return;
+    }
+    // フォーカスを当てる
+    document.getElementById('cam-name-input').focus();
+    // Enterキーで遷移
+    document.getElementById('cam-name-input').onkeydown = e => {
+      if (e.key === 'Enter') goTo('camera');
+    };
+  }
+
+  function goTo(role) {
+    if (document.getElementById('remember-role').checked) {
+      localStorage.setItem('sc_role', role);
+      if (role === 'camera') {
+        localStorage.setItem('sc_cam_name', document.getElementById('cam-name-input').value.trim());
+      }
+    } else {
+      localStorage.removeItem('sc_role');
+      localStorage.removeItem('sc_cam_name');
+    }
+
+    if (role === 'dashboard') {
+      window.location.href = 'dashboard.html';
+    } else {
+      const name = document.getElementById('cam-name-input').value.trim();
+      window.location.href = 'camera.html' + (name ? '?name=' + encodeURIComponent(name) : '');
+    }
+  }
+
   function logout() {
     localStorage.removeItem('sc_role');
-    auth.signOut();
+    localStorage.removeItem('sc_cam_name');
+    auth.signOut().then(() => { window.location.href = 'index.html'; });
   }
 
   function toggleChangelog() {
-    const popup = document.getElementById('changelog-popup');
-    popup.classList.toggle('show');
+    document.getElementById('changelog-popup').classList.toggle('show');
   }
-
-  // 背景クリックで閉じる
-  document.addEventListener('click', (e) => {
-    const popup = document.getElementById('changelog-popup');
-    if (popup && popup.classList.contains('show') && e.target === popup) {
-      popup.classList.remove('show');
-    }
-  });
 </script>
 </body>
 </html>
