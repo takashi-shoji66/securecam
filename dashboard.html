@@ -247,7 +247,10 @@
     pc.ontrack = e => {
       cam.stream = e.streams[0];
       if (cam.cell) {
-        cam.cell.querySelector('video').srcObject = e.streams[0];
+        const video = cam.cell.querySelector('video');
+        video.srcObject = e.streams[0];
+        // Safari対応: 明示的にplay()を呼ぶ
+        video.play().catch(() => {});
         cam.cell.querySelector('.cam-live').className = 'cam-live';
       }
     };
@@ -313,6 +316,14 @@
       '<div class="cam-time" id="camtime-' + cameraId + '"></div></div>';
     document.getElementById('camera-grid').appendChild(cell);
     cam.cell = cell;
+
+    // ストリームが既に到着していればセット
+    if (cam.stream) {
+      const video = cell.querySelector('video');
+      video.srcObject = cam.stream;
+      video.play().catch(() => {});
+      cell.querySelector('.cam-live').className = 'cam-live';
+    }
 
     setInterval(() => {
       const el = document.getElementById('camtime-' + cameraId);
