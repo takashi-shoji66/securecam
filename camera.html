@@ -85,7 +85,7 @@
 <body>
 
 <div class="header">
-  <div class="logo">SECURE<span style="color:var(--muted)">///</span>CAM <span class="ver-badge" onclick="window.open('index.html','_blank')">v1.1.4</span></div>
+  <div class="logo">SECURE<span style="color:var(--muted)">///</span>CAM <span class="ver-badge" onclick="window.open('index.html','_blank')">v1.1.5</span></div>
   <button class="btn-logout" onclick="logout()">LOGOUT</button>
 </div>
 
@@ -184,6 +184,10 @@
   async function startCamera() {
     cameraName = document.getElementById('cam-name').value.trim() || 'カメラ ' + new Date().toTimeString().slice(0,5);
     setStatus('connecting', 'カメラ起動中...');
+
+    // 古いPeerConnectionが残っていたらクリア
+    peerConnections.forEach(pc => pc.close());
+    peerConnections.clear();
 
     try {
       localStream = await navigator.mediaDevices.getUserMedia({
@@ -308,8 +312,13 @@
     if (localStream) { localStream.getTracks().forEach(t => t.stop()); localStream = null; }
     peerConnections.forEach(pc => pc.close());
     peerConnections.clear();
-    if (cameraId) db.ref('cameras/' + cameraId).remove();
-    if (motionTimer) clearInterval(motionTimer);
+    // Firebaseからカメラ情報とシグナリングデータを削除
+    if (cameraId) {
+      db.ref('cameras/' + cameraId).remove();
+      db.ref('signaling/' + cameraId).remove();
+    }
+    if (motionTimer) { clearInterval(motionTimer); motionTimer = null; }
+    prevFrame = null;
 
     document.getElementById('preview').srcObject = null;
     document.getElementById('preview-overlay').classList.remove('hidden');
@@ -317,6 +326,16 @@
     document.getElementById('btn-stop').style.display = 'none';
     setStatus('idle', '待機中');
     document.getElementById('conn-state').textContent = '未接続';
+
+    // 次回開始時に新しいcameraIdを生成
+    cameraId = auth.currentUser.uid + '_' + Date.now();
+    // 新しいcameraIdでシグナリングを再監視
+    db.ref('signaling/' + cameraId).on('child_added', snap => {
+      const msg = snap.val();
+      if (!msg) return;
+      snap.ref.remove();
+      handleSignaling(msg);
+    });
   }
 
   // カメラ切替
