@@ -162,7 +162,7 @@
 <body>
 
 <header>
-  <div class="logo">SECURE<span style="color:var(--muted)">///</span>CAM <span class="ver-badge" onclick="window.open('index.html','_blank')">v1.1.4</span></div>
+  <div class="logo">SECURE<span style="color:var(--muted)">///</span>CAM <span class="ver-badge" onclick="window.open('index.html','_blank')">v1.1.5</span></div>
   <div class="header-stats">
     <div class="stat"><div class="dot" id="live-dot"></div>LIVE <span class="val" id="cam-count">0</span></div>
     <div class="stat">ALERT <span class="val" id="alert-count">0</span></div>
@@ -271,6 +271,20 @@
       removeCamera(snap.key);
     });
 
+    // カメラ情報が更新された場合（再起動時）
+    db.ref('cameras').on('child_changed', snap => {
+      const cam = cameras.get(snap.key);
+      if (cam) {
+        const newInfo = snap.val();
+        if (newInfo && newInfo.name) {
+          cam.name = newInfo.name;
+          const label = cam.cell?.querySelector('.cam-label');
+          if (label) label.textContent = newInfo.name;
+          updateCameraList();
+        }
+      }
+    });
+
     // シグナリング受信（カメラからのoffer・ICE candidate）
     db.ref('signaling/' + myId).on('child_added', snap => {
       const msg = snap.val();
@@ -333,8 +347,20 @@
     pc.onconnectionstatechange = () => {
       const dot = cam.cell?.querySelector('.cam-live');
       if (!dot) return;
-      if (pc.connectionState === 'connected') dot.className = 'cam-live';
-      else if (pc.connectionState === 'disconnected' || pc.connectionState === 'failed') dot.className = 'cam-live offline';
+      if (pc.connectionState === 'connected') {
+        dot.className = 'cam-live';
+      } else if (pc.connectionState === 'failed') {
+        // 接続失敗時は自動削除
+        removeCamera(cameraId);
+      } else if (pc.connectionState === 'disconnected') {
+        dot.className = 'cam-live offline';
+        // 10秒後にまだdisconnectedなら削除
+        setTimeout(() => {
+          if (pc.connectionState === 'disconnected' || pc.connectionState === 'failed') {
+            removeCamera(cameraId);
+          }
+        }, 10000);
+      }
     };
 
     createCameraCell(cameraId, cam);
